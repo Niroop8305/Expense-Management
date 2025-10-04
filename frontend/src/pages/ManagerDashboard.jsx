@@ -7,7 +7,7 @@ import ExpenseByCategoryChart from "../components/ExpenseByCategoryChart";
 import ExpenseTrendsChart from "../components/ExpenseTrendsChart";
 import ExpenseStatusChart from "../components/ExpenseStatusChart";
 
-const ManagerDashboard = () => {
+const ManagerDashboard = ({ roleAlias = 'manager' }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [expenses, setExpenses] = useState([]);
@@ -19,19 +19,52 @@ const ManagerDashboard = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [timelineData, setTimelineData] = useState(null);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [roleDisplay, setRoleDisplay] = useState(null);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const token = localStorage.getItem("token");
 
-    if (!storedUser || !token || storedUser.role !== "manager") {
+    if (!storedUser || !token) {
       navigate("/login");
       return;
     }
 
+    // Redirect employees / admins to their own dashboards
+    if (storedUser.role === 'employee') {
+      navigate('/employee/dashboard');
+      return;
+    }
+    if (storedUser.role === 'admin') {
+      navigate('/admin/dashboard');
+      return;
+    }
+    // Finance & Director already have their own dedicated dashboards; allow them here only if they arrived intentionally
+    // Any other custom role (e.g. cfo) is treated as an approver and allowed to use this view.
+
     setUser(storedUser);
     fetchData(token);
+    fetchRoleMeta(token, storedUser.role);
   }, [navigate]);
+
+  const fetchRoleMeta = async (token, roleName) => {
+    try {
+      // system roles already have capitalized label
+      if (["manager","finance","director"].includes(roleName)) {
+        setRoleDisplay(roleName.charAt(0).toUpperCase()+roleName.slice(1));
+        return;
+      }
+      const res = await axios.get('http://localhost:5000/api/roles', { headers: { Authorization: `Bearer ${token}` }});
+      const match = (res.data.roles || []).find(r => r.name === roleName);
+      if (match) setRoleDisplay(match.displayName || match.name);
+      else setRoleDisplay(roleName.charAt(0).toUpperCase()+roleName.slice(1));
+    } catch (e) {
+      setRoleDisplay(roleName.charAt(0).toUpperCase()+roleName.slice(1));
+    }
+  };
 
   const fetchData = async (token) => {
     try {
@@ -85,6 +118,21 @@ const ManagerDashboard = () => {
       setError(err.response?.data?.message || "Failed to approve expense");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openTimeline = async (expense) => {
+    setTimelineOpen(true);
+    setTimelineLoading(true);
+    setTimelineData(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`http://localhost:5000/api/expenses/${expense._id}/timeline`, { headers: { Authorization: `Bearer ${token}` } });
+      setTimelineData(res.data);
+    } catch (err) {
+      console.error('Failed to load timeline', err);
+    } finally {
+      setTimelineLoading(false);
     }
   };
 
@@ -153,6 +201,8 @@ const ManagerDashboard = () => {
       <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
+            <h1 className="text-2xl font-bold text-gray-900">{(roleDisplay || user.role.charAt(0).toUpperCase()+user.role.slice(1))} Dashboard</h1>
+            <p className="text-sm text-gray-600">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Manager Dashboard
             </h1>
@@ -426,6 +476,12 @@ const ManagerDashboard = () => {
                         >
                           Reject
                         </button>
+                        <button
+                          onClick={() => openTimeline(expense)}
+                          className="text-blue-600 hover:text-blue-900 font-medium"
+                        >
+                          Timeline
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -580,6 +636,61 @@ const ManagerDashboard = () => {
                 {loading ? "Rejecting..." : "Reject Expense"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {timelineOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-3xl w-full p-6 max-h-[80vh] overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Approval Timeline</h3>
+              <button onClick={()=>{setTimelineOpen(false); setTimelineData(null);}} className="text-gray-500 hover:text-gray-800">✕</button>
+            </div>
+            {timelineLoading && <p className="text-sm text-gray-500">Loading...</p>}
+            {!timelineLoading && timelineData && (
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Expense</p>
+                  <div className="text-sm bg-gray-50 border rounded p-3">
+                    <div className="font-medium">{timelineData.expense.description}</div>
+                    <div className="text-xs text-gray-500">Status: {timelineData.expense.status}</div>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Sequential Steps</p>
+                  <ol className="space-y-2">
+                    {timelineData.steps.map(step => (
+                      <li key={step.stepIndex + step.role} className="border rounded p-3 flex justify-between items-start bg-white shadow-sm">
+                        <div>
+                          <div className="text-sm font-semibold">{step.label}</div>
+                          <div className="text-xs text-gray-500">Role: {step.role}</div>
+                          {step.comment && <div className="text-xs text-gray-600 mt-1">Comment: {step.comment}</div>}
+                        </div>
+                        <span className={`px-2 py-1 text-xs rounded font-medium ${step.status === 'approved' ? 'bg-green-100 text-green-700': step.status === 'rejected' ? 'bg-red-100 text-red-700': step.status === 'pending' ? 'bg-yellow-100 text-yellow-700':'bg-gray-100 text-gray-600'}`}>{step.status}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Audit Log</p>
+                  {timelineData.auditLogs.length === 0 ? (
+                    <p className="text-xs text-gray-500">No audit events yet.</p>
+                  ) : (
+                    <ul className="space-y-2 text-sm">
+                      {timelineData.auditLogs.map(log => (
+                        <li key={log._id} className="border rounded p-2 bg-gray-50 flex justify-between">
+                          <div>
+                            <span className="font-medium">{log.action}</span> by {log.user?.name || 'User'}
+                            {log.comment && <span className="text-gray-600"> — {log.comment}</span>}
+                          </div>
+                          <span className="text-xs text-gray-500">{new Date(log.timestamp).toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

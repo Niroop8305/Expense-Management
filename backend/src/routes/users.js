@@ -24,18 +24,20 @@ router.get("/", authenticate, isAdmin, async (req, res) => {
 // POST /api/users/create-user - Create employee or manager (Admin only)
 router.post("/create-user", authenticate, isAdmin, async (req, res) => {
   try {
-    const { name, email, password, role, managerId } = req.body;
+  const { name, email, password, role, managerId } = req.body;
+    console.log('[CREATE USER] Auth user:', req.user);
 
     // Validate required fields
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Validate role
-    if (!["employee", "manager"].includes(role)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid role. Must be 'employee' or 'manager'" });
+    // Dynamic role validation: system roles always allowed; others must exist in Role collection
+    const systemRoles = ["admin", "employee", "manager", "finance", "director"]; // existing known roles
+    const Role = require('../models/Role');
+    if (!systemRoles.includes(role)) {
+      const existingRole = await Role.findOne({ company: req.user.companyId, name: role.toLowerCase() });
+      if (!existingRole) return res.status(400).json({ message: 'Unknown role. Create it first via /api/roles' });
     }
 
     // Check if email already exists
@@ -67,6 +69,7 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      roleName: role, // sync dynamic naming field
       company: req.user.companyId,
       manager: managerId || null,
     });
@@ -100,6 +103,7 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
       createdAt: newUser.createdAt,
     };
 
+    console.log('[CREATE USER] Created user id:', newUser._id.toString());
     return res.status(201).json({
       message: `${
         role.charAt(0).toUpperCase() + role.slice(1)
@@ -107,7 +111,7 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
       user: userResponse,
     });
   } catch (err) {
-    console.error(err);
+    console.error('[CREATE USER] Error:', err);
     return res.status(500).json({ message: "Server error" });
   }
 });
@@ -135,7 +139,14 @@ router.put("/:id", authenticate, isAdmin, async (req, res) => {
     // Update fields
     if (name) user.name = name;
     if (email) user.email = email;
-    if (role && ["employee", "manager"].includes(role)) user.role = role;
+    if (role) {
+      const RoleModel = require('../models/Role');
+      const systemRoles = ["admin", "employee", "manager", "finance", "director"]; 
+      if (systemRoles.includes(role) || await RoleModel.findOne({ company: req.user.companyId, name: role.toLowerCase() })) {
+        user.role = role;
+        user.roleName = role;
+      }
+    }
     if (managerId !== undefined) user.manager = managerId || null;
 
     await user.save();

@@ -76,6 +76,19 @@ const expenseSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Approval workflow fields
+    approvals: [
+      {
+        approver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        role: { type: String },
+        decision: { type: String, enum: ["approved", "rejected"], required: false },
+        comment: { type: String },
+        actedAt: { type: Date },
+      },
+    ],
+    workflow: { type: mongoose.Schema.Types.ObjectId, ref: "Workflow", default: null },
+    currentStep: { type: Number, default: 0 },
+    isManagerApprover: { type: Boolean, default: true },
     rejectionReason: {
       type: String,
       default: null,
