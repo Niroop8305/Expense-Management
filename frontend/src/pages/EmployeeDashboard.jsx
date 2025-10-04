@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { formatCurrency, commonCurrencies, convertCurrency } from "../utils/currency";
+import {
+  formatCurrency,
+  commonCurrencies,
+  convertCurrency,
+} from "../utils/currency";
 import ExpenseByCategoryChart from "../components/ExpenseByCategoryChart";
 import ExpenseTrendsChart from "../components/ExpenseTrendsChart";
 import ExpenseStatusChart from "../components/ExpenseStatusChart";
@@ -100,7 +104,7 @@ const EmployeeDashboard = () => {
 
   const handleCurrencyConversion = async (amount, currency) => {
     if (!amount || !currency || !user?.company?.currency) return;
-    
+
     // If same currency as company, no conversion needed
     if (currency === user.company.currency) {
       setConversionPreview(null);
@@ -116,10 +120,12 @@ const EmployeeDashboard = () => {
       );
       setConversionPreview(conversion);
     } catch (error) {
-      console.error('Conversion error:', error);
+      console.error("Conversion error:", error);
       setConversionPreview({
         error: true,
-        message: error.message || 'Unable to get exchange rate. You can still submit the expense.'
+        message:
+          error.message ||
+          "Unable to get exchange rate. You can still submit the expense.",
       });
     } finally {
       setConversionLoading(false);
@@ -497,7 +503,8 @@ const EmployeeDashboard = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Currency
                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                      (Will be converted to {user.company.currency} automatically)
+                      (Will be converted to {user.company.currency}{" "}
+                      automatically)
                     </span>
                   </label>
                   <select
@@ -515,37 +522,63 @@ const EmployeeDashboard = () => {
                 </div>
 
                 {/* Currency Conversion Preview */}
-                {(conversionPreview || conversionLoading) && newExpense.currency !== user.company.currency && (
-                  <div className="md:col-span-2 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      {conversionLoading ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
-                          <span className="text-sm text-blue-800 dark:text-blue-200">Getting exchange rate...</span>
-                        </div>
-                      ) : conversionPreview?.error ? (
-                        <div className="flex items-center space-x-2">
-                          <svg className="w-4 h-4 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          <span className="text-sm text-yellow-800 dark:text-yellow-200">{conversionPreview.message}</span>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-sm text-blue-800 dark:text-blue-200">
-                            <strong>Original:</strong> {formatCurrency(conversionPreview.originalAmount, conversionPreview.originalCurrency)}
-                          </p>
-                          <p className="text-sm text-blue-800 dark:text-blue-200">
-                            <strong>Company Currency ({user.company.currency}):</strong> {formatCurrency(conversionPreview.convertedAmount, conversionPreview.convertedCurrency)}
-                          </p>
-                          <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
-                            Exchange Rate: 1 {conversionPreview.originalCurrency} = {conversionPreview.exchangeRate.toFixed(4)} {conversionPreview.convertedCurrency}
-                          </p>
-                        </div>
-                      )}
+                {(conversionPreview || conversionLoading) &&
+                  newExpense.currency !== user.company.currency && (
+                    <div className="md:col-span-2 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        {conversionLoading ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                            <span className="text-sm text-blue-800 dark:text-blue-200">
+                              Getting exchange rate...
+                            </span>
+                          </div>
+                        ) : conversionPreview?.error ? (
+                          <div className="flex items-center space-x-2">
+                            <svg
+                              className="w-4 h-4 text-yellow-600 dark:text-yellow-400"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <span className="text-sm text-yellow-800 dark:text-yellow-200">
+                              {conversionPreview.message}
+                            </span>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-sm text-blue-800 dark:text-blue-200">
+                              <strong>Original:</strong>{" "}
+                              {formatCurrency(
+                                conversionPreview.originalAmount,
+                                conversionPreview.originalCurrency
+                              )}
+                            </p>
+                            <p className="text-sm text-blue-800 dark:text-blue-200">
+                              <strong>
+                                Company Currency ({user.company.currency}):
+                              </strong>{" "}
+                              {formatCurrency(
+                                conversionPreview.convertedAmount,
+                                conversionPreview.convertedCurrency
+                              )}
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                              Exchange Rate: 1{" "}
+                              {conversionPreview.originalCurrency} ={" "}
+                              {conversionPreview.exchangeRate.toFixed(4)}{" "}
+                              {conversionPreview.convertedCurrency}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -821,11 +854,16 @@ const EmployeeDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         <div>
                           {formatCurrency(expense.amount, expense.currency)}
-                          {expense.convertedAmount && expense.currency !== expense.convertedCurrency && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              ≈ {formatCurrency(expense.convertedAmount, expense.convertedCurrency)}
-                            </div>
-                          )}
+                          {expense.convertedAmount &&
+                            expense.currency !== expense.convertedCurrency && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                ≈{" "}
+                                {formatCurrency(
+                                  expense.convertedAmount,
+                                  expense.convertedCurrency
+                                )}
+                              </div>
+                            )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
