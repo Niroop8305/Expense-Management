@@ -11,9 +11,15 @@ A full-stack MERN application for managing company expenses with multi-level app
 ## Features (Current Phase)
 
 - ✅ Company registration with automatic admin user creation
-- ✅ Country-based currency auto-selection
+- ✅ Country-based currency auto-selection (195+ countries)
 - ✅ Secure password hashing with bcrypt
 - ✅ RESTful API architecture
+- ✅ **Forgot Password with Email Verification** (6-digit code, 10-min expiry)
+- ✅ Receipt upload for expenses (images & PDFs)
+- ✅ CSV export functionality
+- ✅ Advanced filtering and search
+- ✅ Change password feature
+- ✅ Multi-role dashboards (Admin/Manager/Employee)
 
 ## Project Structure
 

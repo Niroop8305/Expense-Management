@@ -155,6 +155,15 @@ const Login = () => {
                 placeholder="••••••••"
               />
             </div>
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-smooth font-medium"
+              >
+                Forgot Password?
+              </button>
+            </div>
           </div>
 
           <button
