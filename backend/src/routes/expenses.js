@@ -83,7 +83,9 @@ router.post(
 
       // Validate currency code
       if (!currency || currency.length !== 3) {
-        return res.status(400).json({ message: "Valid 3-letter currency code is required" });
+        return res
+          .status(400)
+          .json({ message: "Valid 3-letter currency code is required" });
       }
 
       // Get company details to determine base currency
@@ -105,15 +107,15 @@ router.post(
             currency,
             company.currency
           );
-          
+
           convertedAmount = conversion.convertedAmount;
           convertedCurrency = conversion.convertedCurrency;
           exchangeRate = conversion.exchangeRate;
           conversionDate = new Date(conversion.conversionDate);
         } catch (conversionError) {
           console.error("Currency conversion failed:", conversionError);
-          return res.status(400).json({ 
-            message: `Currency conversion failed: ${conversionError.message}` 
+          return res.status(400).json({
+            message: `Currency conversion failed: ${conversionError.message}`,
           });
         }
       }
