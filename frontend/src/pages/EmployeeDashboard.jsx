@@ -33,6 +33,9 @@ const EmployeeDashboard = () => {
   const [receiptPreview, setReceiptPreview] = useState(null);
   const [conversionPreview, setConversionPreview] = useState(null);
   const [conversionLoading, setConversionLoading] = useState(false);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrData, setOcrData] = useState(null);
+  const [ocrError, setOcrError] = useState("");
 
   const categories = [
     "Travel",
@@ -81,10 +84,13 @@ const EmployeeDashboard = () => {
     navigate("/login");
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setReceiptFile(file);
+      setOcrData(null);
+      setOcrError("");
+      
       // Create preview for images
       if (file.type.startsWith("image/")) {
         const reader = new FileReader();
@@ -95,6 +101,61 @@ const EmployeeDashboard = () => {
       } else {
         setReceiptPreview(null);
       }
+
+      // Process file with OCR
+      await processReceiptWithOCR(file);
+    }
+  };
+
+  const processReceiptWithOCR = async (file) => {
+    setOcrLoading(true);
+    setOcrError("");
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("receipt", file);
+
+      const response = await axios.post(
+        "http://localhost:5000/api/expenses/process-receipt",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.success) {
+        const { data } = response.data;
+        setOcrData(data);
+        
+        // Auto-fill form fields if OCR data is available and confident
+        if (data.confidence > 0.3) {
+          setNewExpense(prev => ({
+            ...prev,
+            ...(data.amount && { amount: data.amount.toString() }),
+            ...(data.date && { date: data.date }),
+            ...(data.category && { category: data.category }),
+            ...(data.description && { description: data.description })
+          }));
+
+          setSuccess("Receipt processed successfully! Form fields have been auto-filled.");
+        } else {
+          setOcrError("Receipt processed but confidence is low. Please verify the extracted data.");
+        }
+      } else {
+        setOcrError(response.data.message || "Failed to process receipt");
+      }
+    } catch (error) {
+      console.error("OCR processing error:", error);
+      setOcrError(
+        error.response?.data?.message || 
+        "Failed to process receipt. Please fill the form manually."
+      );
+    } finally {
+      setOcrLoading(false);
     }
   };
 
@@ -210,6 +271,8 @@ const EmployeeDashboard = () => {
       setReceiptFile(null);
       setReceiptPreview(null);
       setConversionPreview(null);
+      setOcrData(null);
+      setOcrError("");
       fetchExpenses(token);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to submit expense");
@@ -475,6 +538,9 @@ const EmployeeDashboard = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Submit New Expense
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                (Upload receipt for auto-fill)
+              </span>
             </h2>
             <form onSubmit={handleSubmitExpense} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -641,13 +707,82 @@ const EmployeeDashboard = () => {
                       {receiptFile.name}
                     </div>
                   )}
+
+                  {/* OCR Processing Status */}
+                  {ocrLoading && (
+                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className="flex items-center text-sm text-blue-700 dark:text-blue-300">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing receipt with OCR... This may take a few seconds.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* OCR Success */}
+                  {ocrData && ocrData.confidence > 0.3 && (
+                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-start">
+                        <svg className="w-5 h-5 text-green-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm">
+                          <p className="text-green-700 dark:text-green-300 font-medium">Receipt processed successfully!</p>
+                          <p className="text-green-600 dark:text-green-400 mt-1">
+                            Form fields have been auto-filled. Confidence: {Math.round(ocrData.confidence * 100)}%
+                          </p>
+                          {ocrData.amount && <p className="text-xs text-green-600 dark:text-green-400 mt-1">Amount: {ocrData.amount}</p>}
+                          {ocrData.date && <p className="text-xs text-green-600 dark:text-green-400">Date: {ocrData.date}</p>}
+                          {ocrData.category && <p className="text-xs text-green-600 dark:text-green-400">Category: {ocrData.category}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* OCR Low Confidence */}
+                  {ocrData && ocrData.confidence <= 0.3 && ocrData.confidence > 0 && (
+                    <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <div className="flex items-start">
+                        <svg className="w-5 h-5 text-yellow-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm">
+                          <p className="text-yellow-700 dark:text-yellow-300 font-medium">Receipt processed with low confidence</p>
+                          <p className="text-yellow-600 dark:text-yellow-400 mt-1">
+                            Please verify the extracted data. Confidence: {Math.round(ocrData.confidence * 100)}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* OCR Error */}
+                  {ocrError && (
+                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                      <div className="flex items-start">
+                        <svg className="w-5 h-5 text-red-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm">
+                          <p className="text-red-700 dark:text-red-300 font-medium">OCR Processing Failed</p>
+                          <p className="text-red-600 dark:text-red-400 mt-1">{ocrError}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => setShowSubmitForm(false)}
+                  onClick={() => {
+                    setShowSubmitForm(false);
+                    setOcrData(null);
+                    setOcrError("");
+                  }}
                   className="px-6 py-2 border border-gray-300 dark:border-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
                   Cancel

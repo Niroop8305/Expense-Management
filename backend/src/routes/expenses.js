@@ -6,11 +6,61 @@ const Company = require("../models/Company");
 const currencyConverter = require("../utils/currencyConverter");
 const { authenticate, isManagerOrAdmin } = require("../middleware/auth");
 const upload = require("../middleware/upload");
+const { processReceiptFile } = require("../utils/ocr");
 const {
   sendExpenseSubmittedEmail,
   sendExpenseApprovedEmail,
   sendExpenseRejectedEmail,
 } = require("../utils/email");
+
+// POST /api/expenses/process-receipt - Process receipt with OCR
+router.post(
+  "/process-receipt",
+  authenticate,
+  upload.single("receipt"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No receipt file uploaded" });
+      }
+
+      const filePath = req.file.path;
+      const mimeType = req.file.mimetype;
+
+      // Process the receipt file with OCR
+      const result = await processReceiptFile(filePath, mimeType);
+
+      if (result.success) {
+        return res.status(200).json({
+          success: true,
+          message: result.message,
+          data: result.expenseData,
+          extractedText: result.extractedText,
+          fileInfo: {
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            size: req.file.size,
+            path: `/uploads/receipts/${req.file.filename}`
+          }
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: result.message,
+          error: result.error,
+          data: result.expenseData
+        });
+      }
+    } catch (error) {
+      console.error("OCR processing error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error during OCR processing",
+        error: error.message
+      });
+    }
+  }
+);
 
 // POST /api/expenses/submit - Submit a new expense (with optional receipt)
 router.post(
