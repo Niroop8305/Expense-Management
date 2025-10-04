@@ -1,7 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import EmployeeDashboard from "./pages/EmployeeDashboard.jsx";
 import ManagerDashboard from "./pages/ManagerDashboard.jsx"; // kept for backwards nav

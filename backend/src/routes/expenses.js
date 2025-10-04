@@ -2,27 +2,172 @@ const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense");
 const User = require("../models/User");
-const Workflow = require("../models/Workflow");
-const AuditLog = require("../models/AuditLog");
-const { authenticate, isManagerOrAdmin, isApprover } = require("../middleware/auth");
+const Company = require("../models/Company");
+const currencyConverter = require("../utils/currencyConverter");
+const { authenticate, isManagerOrAdmin } = require("../middleware/auth");
 const upload = require("../middleware/upload");
-const { evaluateRules, progressExpense, getCurrentRequiredRole } = require("../utils/approvalEngine");
+const { processReceiptFile } = require("../utils/ocr");
+const {
+  sendExpenseSubmittedEmail,
+  sendExpenseApprovedEmail,
+  sendExpenseRejectedEmail,
+} = require("../utils/email");
+
+// POST /api/expenses/process-receipt - Process receipt with OCR
+router.post(
+  "/process-receipt",
+  authenticate,
+  upload.single("receipt"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No receipt file uploaded" });
+      }
+
+      const filePath = req.file.path;
+      const mimeType = req.file.mimetype;
+
+      // Process the receipt file with OCR
+      const result = await processReceiptFile(filePath, mimeType);
+
+      if (result.success) {
+        return res.status(200).json({
+          success: true,
+          message: result.message,
+          data: result.expenseData,
+          extractedText: result.extractedText,
+          fileInfo: {
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            size: req.file.size,
+            path: `/uploads/receipts/${req.file.filename}`
+          }
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: result.message,
+          error: result.error,
+          data: result.expenseData
+        });
+      }
+    } catch (error) {
+      console.error("OCR processing error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error during OCR processing",
+        error: error.message
+      });
+    }
+  }
+);
 
 // POST /api/expenses/submit - Submit a new expense (with optional receipt)
-router.post("/submit", authenticate, upload.single("receipt"), async (req, res) => {
-  try {
-    // Policy: only 'employee' role can submit expenses (use claimRole fallback)
-    const claimRole = req.user.role || req.user.roleName;
-    if (claimRole !== 'employee') {
-      return res.status(403).json({ message: 'Only employees can submit expenses' });
-    }
-    const { amount, currency, category, description, date, workflowId, isManagerApprover } = req.body;
-    if (!amount || !category || !description || !date) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-    if (amount <= 0) {
-      return res.status(400).json({ message: "Amount must be positive" });
-    }
+router.post(
+  "/submit",
+  authenticate,
+  upload.single("receipt"),
+  async (req, res) => {
+    try {
+      const { amount, currency, category, description, date } = req.body;
+
+      // Validate required fields
+      if (!amount || !currency || !category || !description || !date) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      // Validate amount is positive
+      if (amount <= 0) {
+        return res.status(400).json({ message: "Amount must be positive" });
+      }
+
+      // Validate currency code
+      if (!currency || currency.length !== 3) {
+        return res
+          .status(400)
+          .json({ message: "Valid 3-letter currency code is required" });
+      }
+
+      // Get company details to determine base currency
+      const company = await Company.findById(req.user.companyId);
+      if (!company) {
+        return res.status(404).json({ message: "Company not found" });
+      }
+
+      let convertedAmount = parseFloat(amount);
+      let convertedCurrency = currency.toUpperCase();
+      let exchangeRate = 1;
+      let conversionDate = new Date();
+
+      // Convert currency if different from company currency
+      if (currency.toUpperCase() !== company.currency.toUpperCase()) {
+        try {
+          const conversion = await currencyConverter.convertCurrency(
+            parseFloat(amount),
+            currency,
+            company.currency
+          );
+
+          convertedAmount = conversion.convertedAmount;
+          convertedCurrency = conversion.convertedCurrency;
+          exchangeRate = conversion.exchangeRate;
+          conversionDate = new Date(conversion.conversionDate);
+        } catch (conversionError) {
+          console.error("Currency conversion failed:", conversionError);
+          return res.status(400).json({
+            message: `Currency conversion failed: ${conversionError.message}`,
+          });
+        }
+      }
+
+      // Create new expense
+      const expense = new Expense({
+        amount: parseFloat(amount),
+        currency: currency.toUpperCase(),
+        convertedAmount,
+        convertedCurrency,
+        exchangeRate,
+        conversionDate,
+        category,
+        description,
+        date: new Date(date),
+        submittedBy: req.user.userId,
+        company: req.user.companyId,
+        status: "pending",
+        receiptUrl: req.file ? `/uploads/receipts/${req.file.filename}` : null,
+      });
+
+      await expense.save();
+
+      // Populate submittedBy details
+      await expense.populate("submittedBy", "name email manager");
+
+      // Send email notification to manager (if exists)
+      if (expense.submittedBy.manager) {
+        try {
+          const manager = await User.findById(expense.submittedBy.manager);
+          const company = await Company.findById(req.user.companyId);
+
+          if (manager && manager.email) {
+            await sendExpenseSubmittedEmail(
+              manager.email,
+              manager.name,
+              expense.submittedBy.name,
+              {
+                amount: expense.amount,
+                currency: company.currency,
+                category: expense.category,
+                description: expense.description,
+                date: expense.date,
+              }
+            );
+            console.log(`Notification email sent to manager: ${manager.email}`);
+          }
+        } catch (emailError) {
+          console.error("Failed to send notification email:", emailError);
+          // Don't fail the request if email fails
+        }
+      }
 
     let workflow = null;
     if (workflowId) {
@@ -258,10 +403,37 @@ router.put("/:id/approve", authenticate, isApprover, async (req, res) => {
     }
 
     await expense.save();
-    const updated = await progressExpense(expense._id);
-    console.log('[APPROVE] Post-progress status', updated.status, 'currentStep', updated.currentStep);
-    await updated.populate("submittedBy", "name email role");
-    return res.status(200).json({ message: "Expense approval recorded", expense: updated });
+    await expense.populate("reviewedBy", "name email");
+
+    // Send approval email to employee
+    try {
+      const approver = await User.findById(req.user.userId);
+      const company = await Company.findById(req.user.companyId);
+
+      if (expense.submittedBy.email) {
+        await sendExpenseApprovedEmail(
+          expense.submittedBy.email,
+          expense.submittedBy.name,
+          {
+            amount: expense.amount,
+            currency: company.currency,
+            category: expense.category,
+            description: expense.description,
+            date: expense.date,
+          },
+          approver.name
+        );
+        console.log(`Approval email sent to: ${expense.submittedBy.email}`);
+      }
+    } catch (emailError) {
+      console.error("Failed to send approval email:", emailError);
+      // Don't fail the request if email fails
+    }
+
+    return res.status(200).json({
+      message: "Expense approved successfully",
+      expense,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
@@ -333,7 +505,36 @@ router.put("/:id/reject", authenticate, isApprover, async (req, res) => {
 
     await expense.save();
 
-    return res.status(200).json({ message: "Expense rejected", expense });
+    // Send rejection email to employee
+    try {
+      const rejector = await User.findById(req.user.userId);
+      const company = await Company.findById(req.user.companyId);
+
+      if (expense.submittedBy.email) {
+        await sendExpenseRejectedEmail(
+          expense.submittedBy.email,
+          expense.submittedBy.name,
+          {
+            amount: expense.amount,
+            currency: company.currency,
+            category: expense.category,
+            description: expense.description,
+            date: expense.date,
+          },
+          rejector.name,
+          reason
+        );
+        console.log(`Rejection email sent to: ${expense.submittedBy.email}`);
+      }
+    } catch (emailError) {
+      console.error("Failed to send rejection email:", emailError);
+      // Don't fail the request if email fails
+    }
+
+    return res.status(200).json({
+      message: "Expense rejected successfully",
+      expense,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });

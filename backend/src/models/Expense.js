@@ -2,13 +2,31 @@ const mongoose = require("mongoose");
 
 const expenseSchema = new mongoose.Schema(
   {
+    // Original amount and currency as entered by employee
     amount: {
       type: Number,
       required: true,
     },
     currency: {
       type: String,
-      default: "USD",
+      required: true,
+    },
+    // Converted amount in company's base currency
+    convertedAmount: {
+      type: Number,
+      required: true,
+    },
+    convertedCurrency: {
+      type: String,
+      required: true,
+    },
+    exchangeRate: {
+      type: Number,
+      default: 1,
+    },
+    conversionDate: {
+      type: Date,
+      default: Date.now,
     },
     category: {
       type: String,

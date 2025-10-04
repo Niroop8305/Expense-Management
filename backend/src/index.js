@@ -21,9 +21,12 @@ connectDB();
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/expenses", require("./routes/expenses"));
+
 app.use("/api/workflows", require("./routes/workflows"));
 app.use("/api/roles", require("./routes/roles"));
 app.use("/api/debug", require("./routes/debug"));
+app.use("/api/currency", require("./routes/currency"));
+
 
 app.get("/", (req, res) => res.send({ ok: true }));
 

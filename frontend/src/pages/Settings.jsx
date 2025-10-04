@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -80,72 +81,93 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-            <p className="text-sm text-gray-600">Account Settings</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Settings
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Account Settings
+            </p>
           </div>
-          <button
-            onClick={handleBack}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <button
+              onClick={handleBack}
+              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* User Info Card */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
             Profile Information
           </h2>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-600">Name</label>
-              <p className="text-lg text-gray-900">{user.name}</p>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Name
+              </label>
+              <p className="text-lg text-gray-900 dark:text-white">
+                {user.name}
+              </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600">Email</label>
-              <p className="text-lg text-gray-900">{user.email}</p>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Email
+              </label>
+              <p className="text-lg text-gray-900 dark:text-white">
+                {user.email}
+              </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600">Role</label>
-              <p className="text-lg text-gray-900 capitalize">{user.role}</p>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Role
+              </label>
+              <p className="text-lg text-gray-900 dark:text-white capitalize">
+                {user.role}
+              </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600">
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Company
               </label>
-              <p className="text-lg text-gray-900">{user.company.name}</p>
+              <p className="text-lg text-gray-900 dark:text-white">
+                {user.company.name}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Change Password Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
             Change Password
           </h2>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+            <div className="bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mb-4">
               {success}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Current Password
               </label>
               <input
@@ -154,13 +176,13 @@ const Settings = () => {
                 value={formData.currentPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter current password"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 New Password
               </label>
               <input
@@ -169,13 +191,13 @@ const Settings = () => {
                 value={formData.newPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter new password (min 6 characters)"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Confirm New Password
               </label>
               <input
@@ -184,7 +206,7 @@ const Settings = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Confirm new password"
               />
             </div>
@@ -193,7 +215,7 @@ const Settings = () => {
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                className="px-6 py-2 border border-gray-300 dark:border-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
               >
                 Cancel
               </button>

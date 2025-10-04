@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -110,36 +111,47 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 p-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-2xl animate-scaleIn hover-lift transition-smooth">
-        <div className="text-center mb-6 animate-fadeIn">
-          <div className="inline-block p-3 bg-green-100 rounded-full mb-4">
-            <svg
-              className="w-12 h-12 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-4 transition-colors duration-300">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl dark:shadow-gray-900/50 animate-scaleIn hover-lift transition-smooth">
+        <div className="mb-6 animate-fadeIn">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-green-100 dark:bg-green-900/50 rounded-full flex-shrink-0">
+              <svg
+                className="w-12 h-12 text-green-600 dark:text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                />
+              </svg>
+            </div>
+            <div className="text-left">
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">
+                Register Company
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Create your company account
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Register Company
-          </h1>
-          <p className="text-gray-600">Create your company account</p>
         </div>
 
         {msg && (
           <div
             className={`p-4 mb-4 rounded-lg flex items-center animate-slideInDown alert-enter ${
               msg.type === "success"
-                ? "bg-green-100 text-green-800 border border-green-400"
-                : "bg-red-100 text-red-800 border border-red-400 animate-shake"
+                ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border border-green-400 dark:border-green-700"
+                : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border border-red-400 dark:border-red-700 animate-shake"
             }`}
           >
             <svg
@@ -165,9 +177,9 @@ export default function Register() {
           </div>
         )}
         {loading && (
-          <div className="flex items-center justify-center space-x-2 p-4 bg-blue-50 rounded-lg mb-4 animate-pulse">
+          <div className="flex items-center justify-center space-x-2 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg mb-4 animate-pulse">
             <div className="spinner w-6 h-6 border-2"></div>
-            <span className="text-blue-600 font-medium">
+            <span className="text-blue-600 dark:text-blue-400 font-medium">
               Loading countries...
             </span>
           </div>
@@ -175,27 +187,27 @@ export default function Register() {
 
         <form onSubmit={submit} className="space-y-4">
           <div className="animate-slideInLeft animate-stagger-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Company Name
             </label>
             <input
               name="companyName"
               value={form.companyName}
               onChange={onChange}
-              className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
               placeholder="Enter company name"
             />
           </div>
           <div className="animate-slideInLeft animate-stagger-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Country
             </label>
             <select
               name="country"
               value={form.country}
               onChange={onChange}
-              className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               required
               disabled={loading}
             >
@@ -211,7 +223,7 @@ export default function Register() {
             </select>
           </div>
           <div className="animate-slideInLeft animate-stagger-3">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Currency
               <span className="ml-2 text-xs text-gray-500">
                 (Auto-populated)
@@ -228,7 +240,7 @@ export default function Register() {
                       }`
                     : ""
                 }
-                className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 disabled:cursor-not-allowed"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 bg-gray-50 dark:bg-gray-600 disabled:cursor-not-allowed dark:text-gray-300"
                 disabled
                 placeholder="Automatically set based on country"
               />
@@ -250,20 +262,20 @@ export default function Register() {
             </div>
           </div>
           <div className="animate-slideInRight animate-stagger-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Admin Name
             </label>
             <input
               name="adminName"
               value={form.adminName}
               onChange={onChange}
-              className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="Enter admin name"
               required
             />
           </div>
           <div className="animate-slideInRight animate-stagger-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Admin Email
             </label>
             <input
@@ -271,13 +283,13 @@ export default function Register() {
               value={form.adminEmail}
               onChange={onChange}
               type="email"
-              className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="admin@company.com"
               required
             />
           </div>
           <div className="animate-slideInRight animate-stagger-3">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Password
             </label>
             <input
@@ -285,7 +297,7 @@ export default function Register() {
               value={form.adminPassword}
               onChange={onChange}
               type="password"
-              className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="••••••••"
               required
             />

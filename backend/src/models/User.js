@@ -9,6 +9,8 @@ const UserSchema = new mongoose.Schema({
   roleName: { type: String, default: "employee" },
   company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
   manager: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 
