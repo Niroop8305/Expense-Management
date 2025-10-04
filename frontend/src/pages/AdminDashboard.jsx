@@ -1,0 +1,373 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [managers, setManagers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "employee",
+    managerId: "",
+  });
+
+  useEffect(() => {
+    // Check if user is logged in and is admin
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const token = localStorage.getItem("token");
+
+    if (!storedUser || !token || storedUser.role !== "admin") {
+      navigate("/login");
+      return;
+    }
+
+    setUser(storedUser);
+    fetchUsers(token);
+  }, [navigate]);
+
+  const fetchUsers = async (token) => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(response.data.users);
+      
+      // Filter managers for the dropdown
+      const managerList = response.data.users.filter(
+        (u) => u.role === "manager" || u.role === "admin"
+      );
+      setManagers(managerList);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      if (err.response?.status === 401) {
+        handleLogout();
+      }
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:5000/api/users/create-user",
+        {
+          ...newUser,
+          managerId: newUser.managerId || null,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setSuccess(response.data.message);
+      setShowCreateForm(false);
+      setNewUser({
+        name: "",
+        email: "",
+        password: "",
+        role: "employee",
+        managerId: "",
+      });
+      fetchUsers(token);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to create user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSuccess("User deleted successfully");
+      fetchUsers(token);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete user");
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-sm text-gray-600">
+              {user.company.name} • {user.company.currency}
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-900">{user.name}</p>
+              <p className="text-xs text-gray-600">{user.email}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Success/Error Messages */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+            <button onClick={() => setError("")} className="float-right font-bold">
+              ×
+            </button>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+            {success}
+            <button onClick={() => setSuccess("")} className="float-right font-bold">
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* Create User Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+          >
+            {showCreateForm ? "Cancel" : "+ Add Employee/Manager"}
+          </button>
+        </div>
+
+        {/* Create User Form */}
+        {showCreateForm && (
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Create New User
+            </h2>
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newUser.name}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, name: e.target.value })
+                    }
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="John Doe"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="john@example.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, password: e.target.value })
+                    }
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Role
+                  </label>
+                  <select
+                    value={newUser.role}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, role: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="employee">Employee</option>
+                    <option value="manager">Manager</option>
+                  </select>
+                </div>
+
+                {newUser.role === "employee" && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Assign Manager (Optional)
+                    </label>
+                    <select
+                      value={newUser.managerId}
+                      onChange={(e) =>
+                        setNewUser({ ...newUser, managerId: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">No Manager</option>
+                      {managers.map((manager) => (
+                        <option key={manager._id} value={manager._id}>
+                          {manager.name} ({manager.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateForm(false)}
+                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300"
+                >
+                  {loading ? "Creating..." : "Create User"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Users List */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">All Users</h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Total: {users.length} users
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Manager
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map((u) => (
+                  <tr key={u._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {u.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-600">{u.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          u.role === "admin"
+                            ? "bg-purple-100 text-purple-800"
+                            : u.role === "manager"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {u.role.charAt(0).toUpperCase() + u.role.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {u.manager?.name || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {u.role !== "admin" && (
+                        <button
+                          onClick={() => handleDeleteUser(u._id)}
+                          className="text-red-600 hover:text-red-900 font-medium"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default AdminDashboard;
