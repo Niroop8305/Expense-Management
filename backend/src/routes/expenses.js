@@ -2,56 +2,50 @@ const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense");
 const User = require("../models/User");
-const { authenticate, isManagerOrAdmin } = require("../middleware/auth");
+const Workflow = require("../models/Workflow");
+const AuditLog = require("../models/AuditLog");
+const { authenticate, isManagerOrAdmin, isApprover } = require("../middleware/auth");
 const upload = require("../middleware/upload");
+const { evaluateRules, progressExpense, getCurrentRequiredRole } = require("../utils/approvalEngine");
 
 // POST /api/expenses/submit - Submit a new expense (with optional receipt)
-router.post(
-  "/submit",
-  authenticate,
-  upload.single("receipt"),
-  async (req, res) => {
-    try {
-      const { amount, currency, category, description, date } = req.body;
-
-      // Validate required fields
-      if (!amount || !category || !description || !date) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
-
-      // Validate amount is positive
-      if (amount <= 0) {
-        return res.status(400).json({ message: "Amount must be positive" });
-      }
-
-      // Create new expense
-      const expense = new Expense({
-        amount,
-        currency: currency || "USD",
-        category,
-        description,
-        date: new Date(date),
-        submittedBy: req.user.userId,
-        company: req.user.companyId,
-        status: "pending",
-        receiptUrl: req.file ? `/uploads/receipts/${req.file.filename}` : null,
-      });
-
-      await expense.save();
-
-      // Populate submittedBy details
-      await expense.populate("submittedBy", "name email");
-
-      return res.status(201).json({
-        message: "Expense submitted successfully",
-        expense,
-      });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Server error" });
+router.post("/submit", authenticate, upload.single("receipt"), async (req, res) => {
+  try {
+    const { amount, currency, category, description, date, workflowId, isManagerApprover } = req.body;
+    if (!amount || !category || !description || !date) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+    if (amount <= 0) {
+      return res.status(400).json({ message: "Amount must be positive" });
+    }
+
+    let workflow = null;
+    if (workflowId) {
+      workflow = await Workflow.findOne({ _id: workflowId, company: req.user.companyId });
+      if (!workflow) return res.status(400).json({ message: "Invalid workflow for this company" });
+    }
+
+    const expense = new Expense({
+      amount,
+      currency: currency || "USD",
+      category,
+      description,
+      date: new Date(date),
+      submittedBy: req.user.userId,
+      company: req.user.companyId,
+      status: "pending",
+      receiptUrl: req.file ? `/uploads/receipts/${req.file.filename}` : null,
+      workflow: workflow ? workflow._id : null,
+      isManagerApprover: isManagerApprover !== undefined ? isManagerApprover : true,
+    });
+    await expense.save();
+    await expense.populate("submittedBy", "name email role");
+    return res.status(201).json({ message: "Expense submitted successfully", expense });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
-);
+});
 
 // GET /api/expenses - Get expenses based on user role
 router.get("/", authenticate, async (req, res) => {
@@ -113,27 +107,31 @@ router.get("/", authenticate, async (req, res) => {
 });
 
 // GET /api/expenses/pending - Get pending expenses for approval (Manager/Admin only)
-router.get("/pending", authenticate, isManagerOrAdmin, async (req, res) => {
+router.get("/pending", authenticate, isApprover, async (req, res) => {
   try {
+    // Base: company + pending
     let query = { company: req.user.companyId, status: "pending" };
-
-    if (req.user.role === "manager") {
-      // Manager sees pending expenses from their team
-      const teamMembers = await User.find({
-        company: req.user.companyId,
-        manager: req.user.userId,
-      }).select("_id");
-
-      const teamMemberIds = teamMembers.map((member) => member._id);
-      query.submittedBy = { $in: teamMemberIds };
+    // We will filter in-memory for role-sequential requirement because determining expected role needs populated workflow
+    const raw = await Expense.find(query).populate("workflow").populate("submittedBy", "name email manager role");
+    const list = [];
+    for (const exp of raw) {
+      const requiredRole = getCurrentRequiredRole(exp);
+      if (!requiredRole) continue; // not awaiting any action
+      if (requiredRole === req.user.role) {
+        // manager restriction: only if manager of the submitter or self
+        if (req.user.role === "manager") {
+          if (
+            exp.submittedBy.manager?.toString() === req.user.userId ||
+            exp.submittedBy._id.toString() === req.user.userId
+          ) {
+            list.push(exp);
+          }
+        } else {
+          list.push(exp);
+        }
+      }
     }
-    // Admin sees all pending expenses (no additional filter needed)
-
-    const expenses = await Expense.find(query)
-      .populate("submittedBy", "name email role")
-      .sort({ createdAt: -1 });
-
-    return res.status(200).json({ expenses });
+    return res.status(200).json({ expenses: list });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
@@ -148,7 +146,8 @@ router.get("/:id", authenticate, async (req, res) => {
       company: req.user.companyId,
     })
       .populate("submittedBy", "name email role")
-      .populate("reviewedBy", "name email");
+      .populate("reviewedBy", "name email")
+      .populate("workflow");
 
     if (!expense) {
       return res.status(404).json({ message: "Expense not found" });
@@ -170,52 +169,65 @@ router.get("/:id", authenticate, async (req, res) => {
 });
 
 // PUT /api/expenses/:id/approve - Approve an expense (Manager/Admin only)
-router.put("/:id/approve", authenticate, isManagerOrAdmin, async (req, res) => {
+// PUT /api/expenses/:id/approve - Approve an expense (Approver roles)
+router.put("/:id/approve", authenticate, isApprover, async (req, res) => {
   try {
-    const expense = await Expense.findOne({
-      _id: req.params.id,
-      company: req.user.companyId,
-    }).populate("submittedBy", "name email manager");
+    const expense = await Expense.findOne({ _id: req.params.id, company: req.user.companyId })
+      .populate("workflow")
+      .populate("submittedBy", "name email manager");
+    if (!expense) return res.status(404).json({ message: "Expense not found" });
+    if (expense.status !== "pending") return res.status(400).json({ message: "Expense already reviewed" });
 
-    if (!expense) {
-      return res.status(404).json({ message: "Expense not found" });
+    const requiredRole = getCurrentRequiredRole(expense);
+    if (!requiredRole) {
+      return res.status(400).json({ message: "No approval is required at this stage" });
     }
-
-    if (expense.status !== "pending") {
-      return res.status(400).json({ message: "Expense already reviewed" });
+    if (requiredRole !== req.user.role) {
+      return res.status(403).json({ message: `This step requires role '${requiredRole}'` });
     }
-
-    // Manager can only approve their team member's expenses
     if (req.user.role === "manager") {
       if (
         expense.submittedBy.manager?.toString() !== req.user.userId &&
         expense.submittedBy._id.toString() !== req.user.userId
       ) {
-        return res
-          .status(403)
-          .json({ message: "You can only approve your team's expenses" });
+        return res.status(403).json({ message: "You can only approve your team's expenses" });
       }
     }
 
-    expense.status = "approved";
-    expense.reviewedBy = req.user.userId;
-    expense.reviewedAt = new Date();
+    // prevent duplicate approvals by same role (or same user) at same step
+    const already = expense.approvals.find((a) => a.approver.toString() === req.user.userId);
+    if (already) return res.status(400).json({ message: "You have already acted on this expense" });
+
+    expense.approvals.push({
+      approver: req.user.userId,
+      role: req.user.role,
+      decision: "approved",
+      comment: req.body.comment || "",
+      actedAt: new Date(),
+    });
+
+    await AuditLog.create({ expense: expense._id, action: "approve", user: req.user.userId, comment: req.body.comment || "" });
+
+    // Advance sequential pointer if this was a workflow step (not the manager pre-step)
+    if (expense.workflow && requiredRole !== "manager") {
+      // increment step only if current required role corresponds to workflow step index
+      if (expense.currentStep < expense.workflow.steps.length && expense.workflow.steps[expense.currentStep].approverRole === requiredRole) {
+        expense.currentStep += 1;
+      }
+    }
 
     await expense.save();
-    await expense.populate("reviewedBy", "name email");
-
-    return res.status(200).json({
-      message: "Expense approved successfully",
-      expense,
-    });
+    const updated = await progressExpense(expense._id);
+    await updated.populate("submittedBy", "name email role");
+    return res.status(200).json({ message: "Expense approval recorded", expense: updated });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
   }
 });
 
-// PUT /api/expenses/:id/reject - Reject an expense (Manager/Admin only)
-router.put("/:id/reject", authenticate, isManagerOrAdmin, async (req, res) => {
+// PUT /api/expenses/:id/reject - Reject an expense (Approver roles)
+router.put("/:id/reject", authenticate, isApprover, async (req, res) => {
   try {
     const { reason } = req.body;
 
@@ -237,6 +249,7 @@ router.put("/:id/reject", authenticate, isManagerOrAdmin, async (req, res) => {
     }
 
     // Manager can only reject their team member's expenses
+    // Manager restriction
     if (req.user.role === "manager") {
       if (
         expense.submittedBy.manager?.toString() !== req.user.userId &&
@@ -248,18 +261,28 @@ router.put("/:id/reject", authenticate, isManagerOrAdmin, async (req, res) => {
       }
     }
 
+    // Record rejection and close the flow
+    expense.approvals.push({
+      approver: req.user.userId,
+      role: req.user.role,
+      decision: "rejected",
+      comment: reason,
+      actedAt: new Date(),
+    });
+
     expense.status = "rejected";
-    expense.reviewedBy = req.user.userId;
-    expense.reviewedAt = new Date();
     expense.rejectionReason = reason;
 
-    await expense.save();
-    await expense.populate("reviewedBy", "name email");
-
-    return res.status(200).json({
-      message: "Expense rejected successfully",
-      expense,
+    await AuditLog.create({
+      expense: expense._id,
+      action: "reject",
+      user: req.user.userId,
+      comment: reason,
     });
+
+    await expense.save();
+
+    return res.status(200).json({ message: "Expense rejected", expense });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
@@ -390,3 +413,61 @@ router.get("/export/csv", authenticate, async (req, res) => {
 });
 
 module.exports = router;
+
+// ========== Timeline / Audit endpoint (placed after export to keep existing exports working) ==========
+// GET /api/expenses/:id/timeline - returns expense + approvals + workflow steps + audit logs
+router.get("/:id/timeline", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const expense = await Expense.findOne({ _id: id, company: req.user.companyId })
+      .populate("submittedBy", "name email role manager")
+      .populate({ path: "approvals.approver", select: "name email role" })
+      .populate("workflow");
+    if (!expense) return res.status(404).json({ message: "Expense not found" });
+
+    const AuditLog = require("../models/AuditLog");
+    const auditLogs = await AuditLog.find({ expense: id })
+      .populate("user", "name email role")
+      .sort({ timestamp: 1 });
+
+    // Build step visualization data
+    const steps = [];
+    if (expense.isManagerApprover) {
+      const managerApproval = (expense.approvals || []).find(a => a.role === "manager");
+      steps.push({
+        label: "Manager",
+        role: "manager",
+        stepIndex: -1,
+        status: managerApproval ? managerApproval.decision : (expense.status === "rejected" ? "skipped" : "pending"),
+        actedAt: managerApproval?.actedAt || null,
+        approver: managerApproval?.approver || null,
+        comment: managerApproval?.comment || null,
+      });
+    }
+    if (expense.workflow && expense.workflow.steps) {
+      const ordered = [...expense.workflow.steps].sort((a,b)=>a.stepIndex-b.stepIndex);
+      for (const s of ordered) {
+        const approval = (expense.approvals || []).find(a => a.role === s.approverRole);
+        steps.push({
+          label: s.approverRole.charAt(0).toUpperCase()+s.approverRole.slice(1),
+          role: s.approverRole,
+          stepIndex: s.stepIndex,
+          status: approval ? approval.decision : (expense.status === "rejected" ? "skipped" : "pending"),
+          actedAt: approval?.actedAt || null,
+          approver: approval?.approver || null,
+          comment: approval?.comment || null,
+        });
+      }
+    }
+
+    return res.json({
+      expense,
+      steps,
+      approvals: expense.approvals || [],
+      auditLogs,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});

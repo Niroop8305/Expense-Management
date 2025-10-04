@@ -24,9 +24,12 @@ const EmployeeDashboard = () => {
     category: "Travel",
     description: "",
     date: new Date().toISOString().split("T")[0],
+    workflowId: "",
+    isManagerApprover: true,
   });
   const [receiptFile, setReceiptFile] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState(null);
+  const [workflows, setWorkflows] = useState([]);
 
   const categories = [
     "Travel",
@@ -53,6 +56,7 @@ const EmployeeDashboard = () => {
     setUser(storedUser);
     setNewExpense({ ...newExpense, currency: storedUser.company.currency });
     fetchExpenses(token);
+    fetchWorkflows(token, storedUser.company.id);
   }, [navigate]);
 
   const fetchExpenses = async (token) => {
@@ -73,6 +77,15 @@ const EmployeeDashboard = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
+  };
+
+  const fetchWorkflows = async (token, companyId) => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/workflows/${companyId}` , { headers: { Authorization: `Bearer ${token}` } });
+      setWorkflows(res.data.workflows || []);
+    } catch (err) {
+      console.error('Failed to fetch workflows', err);
+    }
   };
 
   const handleFileChange = (e) => {
@@ -134,6 +147,8 @@ const EmployeeDashboard = () => {
       formData.append("category", newExpense.category);
       formData.append("description", newExpense.description);
       formData.append("date", newExpense.date);
+  if (newExpense.workflowId) formData.append("workflowId", newExpense.workflowId);
+  formData.append("isManagerApprover", newExpense.isManagerApprover);
 
       if (receiptFile) {
         formData.append("receipt", receiptFile);
@@ -158,6 +173,8 @@ const EmployeeDashboard = () => {
         category: "Travel",
         description: "",
         date: new Date().toISOString().split("T")[0],
+        workflowId: "",
+        isManagerApprover: true,
       });
       setReceiptFile(null);
       setReceiptPreview(null);
@@ -401,6 +418,32 @@ const EmployeeDashboard = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="Describe the expense..."
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Workflow (Optional)</label>
+                  <select
+                    value={newExpense.workflowId}
+                    onChange={(e)=> setNewExpense({ ...newExpense, workflowId: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">-- No Workflow (auto-manager & approve) --</option>
+                    {workflows.map(wf => (
+                      <option key={wf._id} value={wf._id}>{wf.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager Must Approve First?</label>
+                  <select
+                    value={newExpense.isManagerApprover ? 'yes':'no'}
+                    onChange={(e)=> setNewExpense({ ...newExpense, isManagerApprover: e.target.value === 'yes' })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
                 </div>
 
                 <div className="md:col-span-2">

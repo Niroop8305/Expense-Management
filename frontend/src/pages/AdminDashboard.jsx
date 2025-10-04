@@ -48,14 +48,23 @@ const AdminDashboard = () => {
     ]);
   };
 
+  const fetchExpenses = async (token) => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/expenses", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setExpenses(response.data.expenses);
+    } catch (err) {
+      console.error("Error fetching expenses:", err);
+    }
+  };
+
   const fetchUsers = async (token) => {
     try {
       const response = await axios.get("http://localhost:5000/api/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data.users);
-
-      // Filter managers for the dropdown
       const managerList = response.data.users.filter(
         (u) => u.role === "manager" || u.role === "admin"
       );
@@ -68,24 +77,11 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchExpenses = async (token) => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/expenses", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setExpenses(response.data.expenses);
-    } catch (err) {
-      console.error("Error fetching expenses:", err);
-    }
-  };
-
   const fetchStats = async (token) => {
     try {
       const response = await axios.get(
         "http://localhost:5000/api/expenses/stats/summary",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setStats(response.data.stats);
     } catch (err) {
@@ -223,6 +219,12 @@ const AdminDashboard = () => {
               className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
             >
               Settings
+            </button>
+            <button
+              onClick={() => navigate("/admin/workflows")}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+            >
+              Workflows
             </button>
             <button
               onClick={handleLogout}
@@ -401,6 +403,8 @@ const AdminDashboard = () => {
                       >
                         <option value="employee">Employee</option>
                         <option value="manager">Manager</option>
+                        <option value="finance">Finance</option>
+                        <option value="director">Director</option>
                       </select>
                     </div>
 
@@ -498,6 +502,10 @@ const AdminDashboard = () => {
                                 ? "bg-purple-100 text-purple-800"
                                 : u.role === "manager"
                                 ? "bg-blue-100 text-blue-800"
+                                : u.role === "finance"
+                                ? "bg-amber-100 text-amber-800"
+                                : u.role === "director"
+                                ? "bg-indigo-100 text-indigo-800"
                                 : "bg-green-100 text-green-800"
                             }`}
                           >
@@ -592,6 +600,8 @@ const AdminDashboard = () => {
                       >
                         <option value="employee">Employee</option>
                         <option value="manager">Manager</option>
+                        <option value="finance">Finance</option>
+                        <option value="director">Director</option>
                       </select>
                     </div>
 

@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ["admin", "manager", "employee"],
+    // support additional roles used in approval workflows
+    enum: ["admin", "manager", "employee", "finance", "director"],
     default: "employee",
   },
   company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },

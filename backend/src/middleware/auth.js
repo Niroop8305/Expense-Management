@@ -37,4 +37,13 @@ const isManagerOrAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticate, isAdmin, isManagerOrAdmin };
+// Generic approver middleware: allows manager, finance, director, admin
+const isApprover = (req, res, next) => {
+  const role = req.user.role;
+  if (!["admin", "manager", "finance", "director"].includes(role)) {
+    return res.status(403).json({ message: "Access denied. Approver role required." });
+  }
+  next();
+};
+
+module.exports = { authenticate, isAdmin, isManagerOrAdmin, isApprover };

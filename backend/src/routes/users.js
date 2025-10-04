@@ -29,11 +29,9 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Validate role
-    if (!["employee", "manager"].includes(role)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid role. Must be 'employee' or 'manager'" });
+    // Validate role (allow finance and director for approvers)
+    if (!["employee", "manager", "finance", "director"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role. Must be one of 'employee','manager','finance','director'" });
     }
 
     // Check if email already exists
@@ -116,7 +114,7 @@ router.put("/:id", authenticate, isAdmin, async (req, res) => {
     // Update fields
     if (name) user.name = name;
     if (email) user.email = email;
-    if (role && ["employee", "manager"].includes(role)) user.role = role;
+  if (role && ["employee", "manager", "finance", "director"].includes(role)) user.role = role;
     if (managerId !== undefined) user.manager = managerId || null;
 
     await user.save();
