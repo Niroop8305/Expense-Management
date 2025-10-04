@@ -4,9 +4,11 @@ const jwt = require("jsonwebtoken");
 const authenticate = (req, res, next) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
-    
+
     if (!token) {
-      return res.status(401).json({ message: "No token, authorization denied" });
+      return res
+        .status(401)
+        .json({ message: "No token, authorization denied" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -28,7 +30,9 @@ const isAdmin = (req, res, next) => {
 // Middleware to check if user is manager or admin
 const isManagerOrAdmin = (req, res, next) => {
   if (req.user.role !== "admin" && req.user.role !== "manager") {
-    return res.status(403).json({ message: "Access denied. Manager or Admin only." });
+    return res
+      .status(403)
+      .json({ message: "Access denied. Manager or Admin only." });
   }
   next();
 };

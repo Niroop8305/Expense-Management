@@ -31,7 +31,9 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
 
     // Validate role
     if (!["employee", "manager"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role. Must be 'employee' or 'manager'" });
+      return res
+        .status(400)
+        .json({ message: "Invalid role. Must be 'employee' or 'manager'" });
     }
 
     // Check if email already exists
@@ -42,12 +44,12 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
 
     // If managerId is provided, validate it exists
     if (managerId) {
-      const manager = await User.findOne({ 
-        _id: managerId, 
+      const manager = await User.findOne({
+        _id: managerId,
         company: req.user.companyId,
-        role: { $in: ["manager", "admin"] }
+        role: { $in: ["manager", "admin"] },
       });
-      
+
       if (!manager) {
         return res.status(400).json({ message: "Invalid manager ID" });
       }
@@ -64,7 +66,7 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
       password: hashedPassword,
       role,
       company: req.user.companyId,
-      manager: managerId || null
+      manager: managerId || null,
     });
 
     await newUser.save();
@@ -76,12 +78,14 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
       email: newUser.email,
       role: newUser.role,
       manager: newUser.manager,
-      createdAt: newUser.createdAt
+      createdAt: newUser.createdAt,
     };
 
-    return res.status(201).json({ 
-      message: `${role.charAt(0).toUpperCase() + role.slice(1)} created successfully`,
-      user: userResponse 
+    return res.status(201).json({
+      message: `${
+        role.charAt(0).toUpperCase() + role.slice(1)
+      } created successfully`,
+      user: userResponse,
     });
   } catch (err) {
     console.error(err);
@@ -95,8 +99,11 @@ router.put("/:id", authenticate, isAdmin, async (req, res) => {
     const { name, email, role, managerId } = req.body;
     const userId = req.params.id;
 
-    const user = await User.findOne({ _id: userId, company: req.user.companyId });
-    
+    const user = await User.findOne({
+      _id: userId,
+      company: req.user.companyId,
+    });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -114,15 +121,15 @@ router.put("/:id", authenticate, isAdmin, async (req, res) => {
 
     await user.save();
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "User updated successfully",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        manager: user.manager
-      }
+        manager: user.manager,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -135,8 +142,11 @@ router.delete("/:id", authenticate, isAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
 
-    const user = await User.findOne({ _id: userId, company: req.user.companyId });
-    
+    const user = await User.findOne({
+      _id: userId,
+      company: req.user.companyId,
+    });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

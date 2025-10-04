@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
     default: "employee",
   },
   company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
+  manager: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   createdAt: { type: Date, default: Date.now },
 });
 
