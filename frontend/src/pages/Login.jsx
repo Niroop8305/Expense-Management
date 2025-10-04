@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -49,12 +50,17 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors duration-300">
+      {/* Theme Toggle - Absolute positioned */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
         <div className="text-center mb-8 animate-fadeIn">
-          <div className="inline-block p-3 bg-blue-100 rounded-full mb-4 animate-bounce">
+          <div className="inline-block p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full mb-4 animate-bounce">
             <svg
-              className="w-12 h-12 text-blue-600"
+              className="w-12 h-12 text-blue-600 dark:text-blue-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -67,14 +73,16 @@ const Login = () => {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
             Welcome Back
           </h1>
-          <p className="text-gray-600">Sign in to your account</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Sign in to your account
+          </p>
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 animate-shake alert-enter">
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4 animate-shake alert-enter">
             <div className="flex items-center">
               <svg
                 className="w-5 h-5 mr-2"
@@ -94,13 +102,13 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="animate-slideInLeft animate-stagger-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Email Address
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
-                  className="h-5 w-5 text-gray-400"
+                  className="h-5 w-5 text-gray-400 dark:text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -119,20 +127,20 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400 dark:hover:border-gray-500"
                 placeholder="you@example.com"
               />
             </div>
           </div>
 
           <div className="animate-slideInLeft animate-stagger-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Password
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
-                  className="h-5 w-5 text-gray-400"
+                  className="h-5 w-5 text-gray-400 dark:text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -151,7 +159,7 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400 dark:hover:border-gray-500"
                 placeholder="••••••••"
               />
             </div>
@@ -159,7 +167,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => navigate("/forgot-password")}
-                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-smooth font-medium"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-smooth font-medium"
               >
                 Forgot Password?
               </button>
@@ -198,11 +206,11 @@ const Login = () => {
         </form>
 
         <div className="mt-6 text-center animate-fadeIn animate-stagger-4">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Don't have an account?{" "}
             <button
               onClick={() => navigate("/register")}
-              className="text-blue-600 hover:text-blue-800 font-semibold transition-smooth hover:underline"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold transition-smooth hover:underline"
             >
               Register your company
             </button>

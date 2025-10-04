@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "../utils/currency";
+import ExpenseByCategoryChart from "../components/ExpenseByCategoryChart";
+import ExpenseTrendsChart from "../components/ExpenseTrendsChart";
+import ExpenseStatusChart from "../components/ExpenseStatusChart";
+import ThemeToggle from "../components/ThemeToggle";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -201,22 +205,27 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Admin Dashboard
             </h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {user.company.name} • {user.company.currency}
             </p>
           </div>
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user.name}</p>
-              <p className="text-xs text-gray-600">{user.email}</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {user.name}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {user.email}
+              </p>
             </div>
             <button
               onClick={() => navigate("/settings")}
@@ -237,7 +246,7 @@ const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Success/Error Messages */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
             {error}
             <button
               onClick={() => setError("")}
@@ -249,7 +258,7 @@ const AdminDashboard = () => {
         )}
 
         {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+          <div className="bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mb-4">
             {success}
             <button
               onClick={() => setSuccess("")}
@@ -293,15 +302,98 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* Charts Section */}
+        {expenses.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Expense by Category Chart */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <svg
+                  className="w-6 h-6 mr-2 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
+                  />
+                </svg>
+                Company Expenses by Category
+              </h3>
+              <ExpenseByCategoryChart
+                expenses={expenses}
+                currency={user.company.currency}
+              />
+            </div>
+
+            {/* Expense Status Chart */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn animate-stagger-1">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <svg
+                  className="w-6 h-6 mr-2 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                Company Status Distribution
+              </h3>
+              <ExpenseStatusChart
+                expenses={expenses}
+                currency={user.company.currency}
+              />
+            </div>
+
+            {/* Expense Trends Chart - Full Width */}
+            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn animate-stagger-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <svg
+                  className="w-6 h-6 mr-2 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+                  />
+                </svg>
+                Company Expense Trends Over Time
+              </h3>
+              <ExpenseTrendsChart
+                expenses={expenses}
+                currency={user.company.currency}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="bg-white rounded-t-lg shadow mb-0">
+        <div className="bg-white dark:bg-gray-800 rounded-t-lg shadow dark:shadow-gray-900/50 mb-0">
           <nav className="flex border-b border-gray-200">
             <button
               onClick={() => setActiveTab("users")}
               className={`px-6 py-3 border-b-2 font-medium text-sm ${
                 activeTab === "users"
                   ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
               User Management ({users.length})
@@ -311,7 +403,7 @@ const AdminDashboard = () => {
               className={`px-6 py-3 border-b-2 font-medium text-sm ${
                 activeTab === "expenses"
                   ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
               All Expenses ({expenses.length})
@@ -334,14 +426,14 @@ const AdminDashboard = () => {
 
             {/* Create User Form */}
             {showCreateForm && (
-              <div className="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                   Create New User
                 </h2>
                 <form onSubmit={handleCreateUser} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Full Name
                       </label>
                       <input
@@ -351,13 +443,13 @@ const AdminDashboard = () => {
                           setNewUser({ ...newUser, name: e.target.value })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="John Doe"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Email
                       </label>
                       <input
@@ -367,13 +459,13 @@ const AdminDashboard = () => {
                           setNewUser({ ...newUser, email: e.target.value })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="john@example.com"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Password
                       </label>
                       <input
@@ -383,13 +475,13 @@ const AdminDashboard = () => {
                           setNewUser({ ...newUser, password: e.target.value })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="••••••••"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Role
                       </label>
                       <select
@@ -397,7 +489,7 @@ const AdminDashboard = () => {
                         onChange={(e) =>
                           setNewUser({ ...newUser, role: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="employee">Employee</option>
                         <option value="manager">Manager</option>
@@ -406,7 +498,7 @@ const AdminDashboard = () => {
 
                     {newUser.role === "employee" && (
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Assign Manager (Optional)
                         </label>
                         <select
@@ -417,7 +509,7 @@ const AdminDashboard = () => {
                               managerId: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">No Manager</option>
                           {managers.map((manager) => (
@@ -434,7 +526,7 @@ const AdminDashboard = () => {
                     <button
                       type="button"
                       onClick={() => setShowCreateForm(false)}
-                      className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                      className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 transition"
                     >
                       Cancel
                     </button>
@@ -451,54 +543,61 @@ const AdminDashboard = () => {
             )}
 
             {/* Users List */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">All Users</h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  All Users
+                </h2>
+                <p className="text-sm text-gray-600 mt-1 dark:text-gray-400">
                   Total: {users.length} users
                 </p>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Role
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Manager
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {users.map((u) => (
-                      <tr key={u._id} className="hover:bg-gray-50">
+                      <tr
+                        key={u._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {u.name}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{u.email}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {u.email}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               u.role === "admin"
-                                ? "bg-purple-100 text-purple-800"
+                                ? "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
                                 : u.role === "manager"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
+                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
+                                : "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                             }`}
                           >
                             {u.role.charAt(0).toUpperCase() + u.role.slice(1)}
@@ -534,14 +633,14 @@ const AdminDashboard = () => {
 
             {/* Edit User Modal */}
             {showEditModal && editingUser && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-lg max-w-md w-full p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+              <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+                <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                     Edit User
                   </h3>
                   <form onSubmit={handleUpdateUser} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Name
                       </label>
                       <input
@@ -554,12 +653,12 @@ const AdminDashboard = () => {
                           })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Email
                       </label>
                       <input
@@ -572,12 +671,12 @@ const AdminDashboard = () => {
                           })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Role
                       </label>
                       <select
@@ -588,7 +687,7 @@ const AdminDashboard = () => {
                             role: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="employee">Employee</option>
                         <option value="manager">Manager</option>
@@ -597,7 +696,7 @@ const AdminDashboard = () => {
 
                     {editingUser.role === "employee" && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Assign Manager (Optional)
                         </label>
                         <select
@@ -608,7 +707,7 @@ const AdminDashboard = () => {
                               managerId: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">No Manager</option>
                           {managers.map((manager) => (
@@ -627,7 +726,7 @@ const AdminDashboard = () => {
                           setShowEditModal(false);
                           setEditingUser(null);
                         }}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 transition"
                       >
                         Cancel
                       </button>
@@ -648,44 +747,44 @@ const AdminDashboard = () => {
 
         {/* Expenses Tab */}
         {activeTab === "expenses" && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 All Company Expenses
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 mt-1 dark:text-gray-400">
                 Total: {expenses.length} expenses
               </p>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Employee
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Description
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Amount
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Reviewed By
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {expenses.length === 0 ? (
                     <tr>
                       <td
@@ -697,22 +796,25 @@ const AdminDashboard = () => {
                     </tr>
                   ) : (
                     expenses.map((expense) => (
-                      <tr key={expense._id} className="hover:bg-gray-50">
+                      <tr
+                        key={expense._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {expense.submittedBy.name}
                           </div>
                           <div className="text-xs text-gray-500">
                             {expense.submittedBy.role}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {new Date(expense.date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {expense.category}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300 max-w-xs">
                           {expense.description}
                           {expense.rejectionReason && (
                             <p className="text-xs text-red-600 mt-1">
@@ -720,17 +822,17 @@ const AdminDashboard = () => {
                             </p>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {formatCurrency(expense.amount, expense.currency)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               expense.status === "approved"
-                                ? "bg-green-100 text-green-800"
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                                 : expense.status === "rejected"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
+                                ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
+                                : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
                             }`}
                           >
                             {expense.status.charAt(0).toUpperCase() +

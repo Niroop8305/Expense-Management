@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -96,11 +97,16 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors duration-300">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
         {/* Header */}
         <div className="text-center mb-8 animate-fadeIn">
-          <div className="inline-block p-3 bg-purple-100 rounded-full mb-4">
+          <div className="inline-block p-3 bg-purple-100 dark:bg-purple-900/50 rounded-full mb-4">
             <svg
               className="w-12 h-12 text-purple-600"
               fill="none"
@@ -214,7 +220,7 @@ const ForgotPassword = () => {
         {step === 1 && (
           <form onSubmit={handleRequestCode} className="space-y-6">
             <div className="animate-slideInLeft">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -238,7 +244,7 @@ const ForgotPassword = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
                   placeholder="you@example.com"
                 />
               </div>
@@ -280,7 +286,7 @@ const ForgotPassword = () => {
         {step === 2 && (
           <form onSubmit={handleVerifyCode} className="space-y-6">
             <div className="animate-slideInLeft">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Verification Code
               </label>
               <div className="relative">
@@ -305,7 +311,7 @@ const ForgotPassword = () => {
                   onChange={(e) => setCode(e.target.value)}
                   required
                   maxLength={6}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400 text-center text-2xl font-bold tracking-widest"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400 text-center text-2xl font-bold tracking-widest"
                   placeholder="000000"
                 />
               </div>
@@ -358,7 +364,7 @@ const ForgotPassword = () => {
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="space-y-6">
             <div className="animate-slideInLeft animate-stagger-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -382,14 +388,14 @@ const ForgotPassword = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
             <div className="animate-slideInLeft animate-stagger-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -413,7 +419,7 @@ const ForgotPassword = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
                   placeholder="••••••••"
                 />
               </div>

@@ -2,8 +2,14 @@ const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense");
 const User = require("../models/User");
+const Company = require("../models/Company");
 const { authenticate, isManagerOrAdmin } = require("../middleware/auth");
 const upload = require("../middleware/upload");
+const {
+  sendExpenseSubmittedEmail,
+  sendExpenseApprovedEmail,
+  sendExpenseRejectedEmail,
+} = require("../utils/email");
 
 // POST /api/expenses/submit - Submit a new expense (with optional receipt)
 router.post(
@@ -40,7 +46,34 @@ router.post(
       await expense.save();
 
       // Populate submittedBy details
-      await expense.populate("submittedBy", "name email");
+      await expense.populate("submittedBy", "name email manager");
+
+      // Send email notification to manager (if exists)
+      if (expense.submittedBy.manager) {
+        try {
+          const manager = await User.findById(expense.submittedBy.manager);
+          const company = await Company.findById(req.user.companyId);
+
+          if (manager && manager.email) {
+            await sendExpenseSubmittedEmail(
+              manager.email,
+              manager.name,
+              expense.submittedBy.name,
+              {
+                amount: expense.amount,
+                currency: company.currency,
+                category: expense.category,
+                description: expense.description,
+                date: expense.date,
+              }
+            );
+            console.log(`Notification email sent to manager: ${manager.email}`);
+          }
+        } catch (emailError) {
+          console.error("Failed to send notification email:", emailError);
+          // Don't fail the request if email fails
+        }
+      }
 
       return res.status(201).json({
         message: "Expense submitted successfully",
@@ -204,6 +237,31 @@ router.put("/:id/approve", authenticate, isManagerOrAdmin, async (req, res) => {
     await expense.save();
     await expense.populate("reviewedBy", "name email");
 
+    // Send approval email to employee
+    try {
+      const approver = await User.findById(req.user.userId);
+      const company = await Company.findById(req.user.companyId);
+
+      if (expense.submittedBy.email) {
+        await sendExpenseApprovedEmail(
+          expense.submittedBy.email,
+          expense.submittedBy.name,
+          {
+            amount: expense.amount,
+            currency: company.currency,
+            category: expense.category,
+            description: expense.description,
+            date: expense.date,
+          },
+          approver.name
+        );
+        console.log(`Approval email sent to: ${expense.submittedBy.email}`);
+      }
+    } catch (emailError) {
+      console.error("Failed to send approval email:", emailError);
+      // Don't fail the request if email fails
+    }
+
     return res.status(200).json({
       message: "Expense approved successfully",
       expense,
@@ -255,6 +313,32 @@ router.put("/:id/reject", authenticate, isManagerOrAdmin, async (req, res) => {
 
     await expense.save();
     await expense.populate("reviewedBy", "name email");
+
+    // Send rejection email to employee
+    try {
+      const rejector = await User.findById(req.user.userId);
+      const company = await Company.findById(req.user.companyId);
+
+      if (expense.submittedBy.email) {
+        await sendExpenseRejectedEmail(
+          expense.submittedBy.email,
+          expense.submittedBy.name,
+          {
+            amount: expense.amount,
+            currency: company.currency,
+            category: expense.category,
+            description: expense.description,
+            date: expense.date,
+          },
+          rejector.name,
+          reason
+        );
+        console.log(`Rejection email sent to: ${expense.submittedBy.email}`);
+      }
+    } catch (emailError) {
+      console.error("Failed to send rejection email:", emailError);
+      // Don't fail the request if email fails
+    }
 
     return res.status(200).json({
       message: "Expense rejected successfully",

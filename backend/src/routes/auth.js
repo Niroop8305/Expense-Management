@@ -176,7 +176,9 @@ router.post("/forgot-password", async (req, res) => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found with this email" });
+      return res
+        .status(404)
+        .json({ message: "User not found with this email" });
     }
 
     // Generate 6-digit reset code

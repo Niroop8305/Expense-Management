@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const Company = require("../models/Company");
 const { authenticate, isAdmin } = require("../middleware/auth");
+const { sendWelcomeEmail } = require("../utils/email");
 
 // GET /api/users - Get all users in the company (Admin only)
 router.get("/", authenticate, isAdmin, async (req, res) => {
@@ -70,6 +72,23 @@ router.post("/create-user", authenticate, isAdmin, async (req, res) => {
     });
 
     await newUser.save();
+
+    // Send welcome email to new user
+    try {
+      const company = await Company.findById(req.user.companyId);
+
+      await sendWelcomeEmail(
+        email,
+        name,
+        role,
+        company.name,
+        password // Send the plain text password (only in welcome email)
+      );
+      console.log(`Welcome email sent to: ${email}`);
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Don't fail the request if email fails
+    }
 
     // Return user without password
     const userResponse = {
