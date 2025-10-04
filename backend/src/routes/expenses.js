@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense");
 const User = require("../models/User");
+const Company = require("../models/Company");
+const currencyConverter = require("../utils/currencyConverter");
 const { authenticate, isManagerOrAdmin } = require("../middleware/auth");
 const upload = require("../middleware/upload");
 
@@ -15,7 +17,7 @@ router.post(
       const { amount, currency, category, description, date } = req.body;
 
       // Validate required fields
-      if (!amount || !category || !description || !date) {
+      if (!amount || !currency || !category || !description || !date) {
         return res.status(400).json({ message: "All fields are required" });
       }
 
@@ -24,10 +26,51 @@ router.post(
         return res.status(400).json({ message: "Amount must be positive" });
       }
 
+      // Validate currency code
+      if (!currency || currency.length !== 3) {
+        return res.status(400).json({ message: "Valid 3-letter currency code is required" });
+      }
+
+      // Get company details to determine base currency
+      const company = await Company.findById(req.user.companyId);
+      if (!company) {
+        return res.status(404).json({ message: "Company not found" });
+      }
+
+      let convertedAmount = parseFloat(amount);
+      let convertedCurrency = currency.toUpperCase();
+      let exchangeRate = 1;
+      let conversionDate = new Date();
+
+      // Convert currency if different from company currency
+      if (currency.toUpperCase() !== company.currency.toUpperCase()) {
+        try {
+          const conversion = await currencyConverter.convertCurrency(
+            parseFloat(amount),
+            currency,
+            company.currency
+          );
+          
+          convertedAmount = conversion.convertedAmount;
+          convertedCurrency = conversion.convertedCurrency;
+          exchangeRate = conversion.exchangeRate;
+          conversionDate = new Date(conversion.conversionDate);
+        } catch (conversionError) {
+          console.error("Currency conversion failed:", conversionError);
+          return res.status(400).json({ 
+            message: `Currency conversion failed: ${conversionError.message}` 
+          });
+        }
+      }
+
       // Create new expense
       const expense = new Expense({
-        amount,
-        currency: currency || "USD",
+        amount: parseFloat(amount),
+        currency: currency.toUpperCase(),
+        convertedAmount,
+        convertedCurrency,
+        exchangeRate,
+        conversionDate,
         category,
         description,
         date: new Date(date),
