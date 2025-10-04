@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
    - Persist via backend POST /api/workflows
 */
 
-const ROLE_OPTIONS = [
+const BASE_ROLE_OPTIONS = [
   { value: 'manager', label: 'Manager' },
   { value: 'finance', label: 'Finance' },
   { value: 'director', label: 'Director' },
@@ -25,6 +25,8 @@ const WorkflowBuilder = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  // dynamic approver roles fetched from backend (excluding system roles)
+  const [dynamicRoles, setDynamicRoles] = useState([]);
 
   // Builder state
   const [name, setName] = useState('');
@@ -32,16 +34,29 @@ const WorkflowBuilder = () => {
   const [ruleType, setRuleType] = useState('none');
   const [percentage, setPercentage] = useState(60);
   const [specialRole, setSpecialRole] = useState('');
+  const [companyUsers, setCompanyUsers] = useState([]);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
-    if (!storedUser || !token || storedUser.role !== 'admin') {
-      navigate('/login');
-      return;
-    }
-    setUser(storedUser);
-    fetchWorkflows(token, storedUser.company.id);
+    if (!token) { navigate('/login'); return; }
+    // Always verify with backend to avoid stale localStorage forcing re-login
+    const sync = async () => {
+      try {
+        const me = await axios.get('http://localhost:5000/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        if (!me.data?.user || me.data.user.role !== 'admin') {
+          navigate('/login');
+          return;
+        }
+        setUser(me.data.user);
+        localStorage.setItem('user', JSON.stringify(me.data.user));
+        fetchWorkflows(token, me.data.user.company.id);
+        fetchUsers(token);
+        fetchRoles(token);
+      } catch (e) {
+        navigate('/login');
+      }
+    };
+    sync();
   }, [navigate]);
 
   const fetchWorkflows = async (token, companyId) => {
@@ -55,12 +70,46 @@ const WorkflowBuilder = () => {
     }
   };
 
+  const fetchUsers = async (token) => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } });
+      const mapped = (res.data.users || []).map(u => ({ id: u._id, name: u.name, role: u.role }));
+      setCompanyUsers(mapped);
+    } catch (err) {
+      console.error('Failed to fetch users', err);
+    }
+  };
+
+  const fetchRoles = async (token) => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/roles', { headers: { Authorization: `Bearer ${token}` } });
+      const mapped = (res.data.roles || []).filter(r=>!['admin','employee'].includes(r.name)).map(r=>({ value: r.name, label: r.displayName || r.name }));
+      setDynamicRoles(mapped);
+    } catch (e) { console.error('Failed to fetch roles', e); }
+  };
+
   const addStep = () => {
-    setSteps((prev) => [...prev, { stepIndex: prev.length, approverRole: 'manager' }]);
+    setSteps((prev) => [...prev, { stepIndex: prev.length, approverType: 'role', approverRole: 'manager', approverUsers: [], approvalMode: 'any' }]);
   };
 
   const updateStepRole = (idx, role) => {
     setSteps((prev) => prev.map((s) => (s.stepIndex === idx ? { ...s, approverRole: role } : s)));
+  };
+
+  const updateStepType = (idx, type) => {
+    setSteps(prev => prev.map(s => s.stepIndex === idx ? { ...s, approverType: type } : s));
+  };
+
+  const toggleUserForStep = (idx, userId) => {
+    setSteps(prev => prev.map(s => {
+      if (s.stepIndex !== idx) return s;
+      const exists = s.approverUsers.includes(userId);
+      return { ...s, approverUsers: exists ? s.approverUsers.filter(u=>u!==userId) : [...s.approverUsers, userId] };
+    }));
+  };
+
+  const updateApprovalMode = (idx, mode) => {
+    setSteps(prev => prev.map(s => s.stepIndex === idx ? { ...s, approvalMode: mode } : s));
   };
 
   const removeStep = (idx) => {
@@ -100,6 +149,13 @@ const WorkflowBuilder = () => {
       setError('At least one step is required');
       return;
     }
+    // validate user steps have members
+    for (const s of steps) {
+      if (s.approverType === 'users' && (!s.approverUsers || s.approverUsers.length === 0)) {
+        setError('Each member-based step must include at least one member.');
+        return;
+      }
+    }
     if (ruleType === 'percentage' || ruleType === 'hybrid') {
       if (percentage < 1 || percentage > 100) {
         setError('Percentage must be between 1 and 100');
@@ -115,8 +171,8 @@ const WorkflowBuilder = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const payload = {
-        name: name.trim(),
-        steps: steps.map(({ stepIndex, approverRole }) => ({ stepIndex, approverRole })),
+          name: name.trim(),
+          steps: steps.map(({ stepIndex, approverType, approverRole, approverUsers, approvalMode }) => ({ stepIndex, approverType, approverRole: approverType==='role'?approverRole:undefined, approverUsers: approverType==='users'?approverUsers:[], approvalMode })),
         rules: {
           type: ruleType,
           percentage: ruleType === 'percentage' || ruleType === 'hybrid' ? Number(percentage) : undefined,
@@ -186,22 +242,49 @@ const WorkflowBuilder = () => {
                 <button type="button" onClick={addStep} className="text-sm text-blue-600 hover:underline">+ Add Step</button>
               </div>
               {steps.length === 0 && <p className="text-xs text-gray-500">No steps yet. Add at least one.</p>}
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {steps.map((s, idx) => (
-                  <li key={s.stepIndex} className="flex items-center gap-2 bg-gray-50 border rounded px-3 py-2">
-                    <span className="text-sm font-semibold w-6 text-gray-600">{idx + 1}</span>
-                    <select
-                      value={s.approverRole}
-                      onChange={(e) => updateStepRole(s.stepIndex, e.target.value)}
-                      className="border rounded px-2 py-1 text-sm flex-1"
-                    >
-                      {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                    </select>
-                    <div className="flex gap-1">
-                      <button type="button" onClick={() => moveStep(idx, -1)} disabled={idx === 0} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↑</button>
-                      <button type="button" onClick={() => moveStep(idx, 1)} disabled={idx === steps.length - 1} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↓</button>
-                      <button type="button" onClick={() => removeStep(s.stepIndex)} className="px-2 py-1 text-xs border rounded text-red-600">✕</button>
+                  <li key={s.stepIndex} className="bg-gray-50 border rounded px-3 py-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold w-6 text-gray-600">{idx + 1}</span>
+                      <select value={s.approverType} onChange={(e)=>updateStepType(s.stepIndex, e.target.value)} className="border rounded px-2 py-1 text-xs">
+                        <option value="role">Role</option>
+                        <option value="users">Members</option>
+                      </select>
+                      {s.approverType === 'role' && (
+                        <select
+                          value={s.approverRole}
+                          onChange={(e) => updateStepRole(s.stepIndex, e.target.value)}
+                          className="border rounded px-2 py-1 text-sm flex-1"
+                        >
+                          {[...BASE_ROLE_OPTIONS, ...dynamicRoles].map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                        </select>
+                      )}
+                      {s.approverType === 'users' && (
+                        <div className="flex-1">
+                          <div className="flex flex-wrap gap-1">
+                            {companyUsers.map(u => (
+                              <button type="button" key={u.id} onClick={()=>toggleUserForStep(s.stepIndex, u.id)} className={`px-2 py-1 text-xs rounded border ${s.approverUsers.includes(u.id) ? 'bg-blue-600 text-white border-blue-600':'bg-white text-gray-700'}`}>{u.name}</button>
+                            ))}
+                          </div>
+                          <div className="mt-1">
+                            <label className="text-[10px] uppercase tracking-wide text-gray-500 mr-1">Mode:</label>
+                            <select value={s.approvalMode} onChange={(e)=>updateApprovalMode(s.stepIndex, e.target.value)} className="border rounded px-2 py-1 text-xs">
+                              <option value="any">Any</option>
+                              <option value="all">All</option>
+                            </select>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => moveStep(idx, -1)} disabled={idx === 0} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↑</button>
+                        <button type="button" onClick={() => moveStep(idx, 1)} disabled={idx === steps.length - 1} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↓</button>
+                        <button type="button" onClick={() => removeStep(s.stepIndex)} className="px-2 py-1 text-xs border rounded text-red-600">✕</button>
+                      </div>
                     </div>
+                    {s.approverType === 'users' && s.approverUsers.length === 0 && (
+                      <p className="text-[11px] text-red-500">Select at least one member.</p>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -226,7 +309,7 @@ const WorkflowBuilder = () => {
                   <label className="block text-xs font-medium text-gray-600 mb-1">Special Role</label>
                   <select value={specialRole} onChange={(e) => setSpecialRole(e.target.value)} className="border rounded px-2 py-1 w-48">
                     <option value="">-- Select Role --</option>
-                    {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    {[...BASE_ROLE_OPTIONS, ...dynamicRoles].map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
                 </div>
               )}
@@ -263,7 +346,14 @@ const WorkflowBuilder = () => {
                       <ol className="list-decimal ml-5 text-sm space-y-1">
                         {wf.steps
                           .sort((a,b)=>a.stepIndex-b.stepIndex)
-                          .map(s => <li key={s._id || s.stepIndex}>{s.approverRole}</li>)}
+                          .map(s => {
+                            if (s.approverType === 'users') {
+                              return <li key={s._id || s.stepIndex}>Members ({s.approverUsers?.length || 0}) - mode: {s.approvalMode}</li>;
+                            }
+                            const allRoles = [...BASE_ROLE_OPTIONS, ...dynamicRoles];
+                            const roleObj = allRoles.find(r => r.value === s.approverRole);
+                            return <li key={s._id || s.stepIndex}>{roleObj ? roleObj.label : s.approverRole}</li>;
+                          })}
                       </ol>
                     )}
                   </div>

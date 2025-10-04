@@ -11,6 +11,11 @@ const { evaluateRules, progressExpense, getCurrentRequiredRole } = require("../u
 // POST /api/expenses/submit - Submit a new expense (with optional receipt)
 router.post("/submit", authenticate, upload.single("receipt"), async (req, res) => {
   try {
+    // Policy: only 'employee' role can submit expenses (use claimRole fallback)
+    const claimRole = req.user.role || req.user.roleName;
+    if (claimRole !== 'employee') {
+      return res.status(403).json({ message: 'Only employees can submit expenses' });
+    }
     const { amount, currency, category, description, date, workflowId, isManagerApprover } = req.body;
     if (!amount || !category || !description || !date) {
       return res.status(400).json({ message: "All fields are required" });
@@ -109,26 +114,45 @@ router.get("/", authenticate, async (req, res) => {
 // GET /api/expenses/pending - Get pending expenses for approval (Manager/Admin only)
 router.get("/pending", authenticate, isApprover, async (req, res) => {
   try {
-    // Base: company + pending
+    const claimRole = req.user.role || req.user.roleName; // tolerate legacy tokens
     let query = { company: req.user.companyId, status: "pending" };
-    // We will filter in-memory for role-sequential requirement because determining expected role needs populated workflow
-    const raw = await Expense.find(query).populate("workflow").populate("submittedBy", "name email manager role");
+    const raw = await Expense.find(query)
+      .populate("workflow")
+      .populate("submittedBy", "name email manager role");
+
     const list = [];
     for (const exp of raw) {
       const requiredRole = getCurrentRequiredRole(exp);
-      if (!requiredRole) continue; // not awaiting any action
-      if (requiredRole === req.user.role) {
-        // manager restriction: only if manager of the submitter or self
-        if (req.user.role === "manager") {
-          if (
-            exp.submittedBy.manager?.toString() === req.user.userId ||
-            exp.submittedBy._id.toString() === req.user.userId
-          ) {
-            list.push(exp);
+      if (!requiredRole) continue;
+
+      // User-based (member) step handling
+      if (requiredRole === 'users') {
+        if (!exp.workflow || exp.currentStep >= exp.workflow.steps.length) continue;
+        const step = exp.workflow.steps[exp.currentStep];
+        if (step.approverType === 'users') {
+          const allowedUsers = (step.approverUsers || []).map(id => id.toString());
+          const hasApproved = (exp.approvals || []).some(a => a.approver?.toString() === req.user.userId);
+            // Determine if step already satisfied (so we shouldn't show it again)
+          let stepSatisfied = false;
+          if (step.approvalMode === 'all') {
+            const approvedCount = (exp.approvals || []).filter(a => allowedUsers.includes(a.approver?.toString()) && a.decision === 'approved').length;
+            stepSatisfied = approvedCount === allowedUsers.length;
+          } else { // any
+            stepSatisfied = (exp.approvals || []).some(a => allowedUsers.includes(a.approver?.toString()) && a.decision === 'approved');
           }
-        } else {
-          list.push(exp);
+           if (allowedUsers.includes(req.user.userId) && !hasApproved && !stepSatisfied) {
+             exp._doc._requiredRole = 'members';
+             list.push(exp);
+            continue; // already added; don't double-process
+          }
         }
+      }
+
+      // Role-based handling (manager + dynamic roles)
+       if (requiredRole === claimRole) {
+         // Manager now has global visibility of manager-step expenses
+         exp._doc._requiredRole = requiredRole;
+         list.push(exp);
       }
     }
     return res.status(200).json({ expenses: list });
@@ -172,27 +196,40 @@ router.get("/:id", authenticate, async (req, res) => {
 // PUT /api/expenses/:id/approve - Approve an expense (Approver roles)
 router.put("/:id/approve", authenticate, isApprover, async (req, res) => {
   try {
+    console.log('[APPROVE] Attempt by user', req.user.userId, 'role', req.user.role || req.user.roleName, 'expense', req.params.id);
     const expense = await Expense.findOne({ _id: req.params.id, company: req.user.companyId })
       .populate("workflow")
       .populate("submittedBy", "name email manager");
     if (!expense) return res.status(404).json({ message: "Expense not found" });
     if (expense.status !== "pending") return res.status(400).json({ message: "Expense already reviewed" });
 
-    const requiredRole = getCurrentRequiredRole(expense);
+  const claimRole = req.user.role || req.user.roleName;
+  const requiredRole = getCurrentRequiredRole(expense);
     if (!requiredRole) {
       return res.status(400).json({ message: "No approval is required at this stage" });
     }
-    if (requiredRole !== req.user.role) {
+
+    // User-based step (custom member approvers)
+    let isUserStep = false;
+    if (requiredRole === 'users') {
+      isUserStep = true;
+      const step = expense.workflow.steps[expense.currentStep];
+      const allowedUsers = (step.approverUsers || []).map(id => id.toString());
+      if (!allowedUsers.includes(req.user.userId)) {
+        return res.status(403).json({ message: "You are not an assigned approver for this step" });
+      }
+      // prevent extra approvals when step already satisfied
+      if (step.approvalMode === 'all') {
+        const approvedCount = (expense.approvals || []).filter(a => allowedUsers.includes(a.approver?.toString()) && a.decision === 'approved').length;
+        if (approvedCount === allowedUsers.length) return res.status(400).json({ message: 'Step already satisfied' });
+      } else {
+        const anyApproved = (expense.approvals || []).some(a => allowedUsers.includes(a.approver?.toString()) && a.decision === 'approved');
+        if (anyApproved) return res.status(400).json({ message: 'Step already satisfied by another approver' });
+      }
+    } else if (requiredRole !== claimRole) {
       return res.status(403).json({ message: `This step requires role '${requiredRole}'` });
     }
-    if (req.user.role === "manager") {
-      if (
-        expense.submittedBy.manager?.toString() !== req.user.userId &&
-        expense.submittedBy._id.toString() !== req.user.userId
-      ) {
-        return res.status(403).json({ message: "You can only approve your team's expenses" });
-      }
-    }
+    // Manager global approval enabled: removed team-only restriction
 
     // prevent duplicate approvals by same role (or same user) at same step
     const already = expense.approvals.find((a) => a.approver.toString() === req.user.userId);
@@ -200,7 +237,7 @@ router.put("/:id/approve", authenticate, isApprover, async (req, res) => {
 
     expense.approvals.push({
       approver: req.user.userId,
-      role: req.user.role,
+      role: isUserStep ? 'users' : claimRole,
       decision: "approved",
       comment: req.body.comment || "",
       actedAt: new Date(),
@@ -210,14 +247,19 @@ router.put("/:id/approve", authenticate, isApprover, async (req, res) => {
 
     // Advance sequential pointer if this was a workflow step (not the manager pre-step)
     if (expense.workflow && requiredRole !== "manager") {
-      // increment step only if current required role corresponds to workflow step index
-      if (expense.currentStep < expense.workflow.steps.length && expense.workflow.steps[expense.currentStep].approverRole === requiredRole) {
-        expense.currentStep += 1;
+      if (!isUserStep) {
+        if (expense.currentStep < expense.workflow.steps.length) {
+          const step = expense.workflow.steps[expense.currentStep];
+            if (step.approverType === 'role' && step.approverRole === requiredRole) {
+              expense.currentStep += 1;
+            }
+        }
       }
     }
 
     await expense.save();
     const updated = await progressExpense(expense._id);
+    console.log('[APPROVE] Post-progress status', updated.status, 'currentStep', updated.currentStep);
     await updated.populate("submittedBy", "name email role");
     return res.status(200).json({ message: "Expense approval recorded", expense: updated });
   } catch (err) {
@@ -250,21 +292,30 @@ router.put("/:id/reject", authenticate, isApprover, async (req, res) => {
 
     // Manager can only reject their team member's expenses
     // Manager restriction
-    if (req.user.role === "manager") {
-      if (
-        expense.submittedBy.manager?.toString() !== req.user.userId &&
-        expense.submittedBy._id.toString() !== req.user.userId
-      ) {
-        return res
-          .status(403)
-          .json({ message: "You can only reject your team's expenses" });
+    const claimRole = req.user.role || req.user.roleName;
+    // Manager global rejection enabled: removed team-only restriction
+
+    // If it's a user-based step ensure this user is among assigned users and hasn't already approved/rejected
+    const requiredRole = getCurrentRequiredRole(expense);
+    if (requiredRole === 'users') {
+      if (!expense.workflow || expense.currentStep >= expense.workflow.steps.length) {
+        return res.status(400).json({ message: 'Invalid workflow step' });
+      }
+      const step = expense.workflow.steps[expense.currentStep];
+      if (step.approverType === 'users') {
+        const allowedUsers = (step.approverUsers || []).map(id => id.toString());
+        if (!allowedUsers.includes(req.user.userId)) {
+          return res.status(403).json({ message: 'You are not an assigned approver for this step' });
+        }
+        const alreadyActed = (expense.approvals || []).some(a => a.approver?.toString() === req.user.userId);
+        if (alreadyActed) return res.status(400).json({ message: 'You have already acted on this expense' });
       }
     }
 
     // Record rejection and close the flow
     expense.approvals.push({
       approver: req.user.userId,
-      role: req.user.role,
+      role: requiredRole === 'users' ? 'users' : claimRole,
       decision: "rejected",
       comment: reason,
       actedAt: new Date(),
@@ -447,16 +498,37 @@ router.get("/:id/timeline", authenticate, async (req, res) => {
     if (expense.workflow && expense.workflow.steps) {
       const ordered = [...expense.workflow.steps].sort((a,b)=>a.stepIndex-b.stepIndex);
       for (const s of ordered) {
-        const approval = (expense.approvals || []).find(a => a.role === s.approverRole);
-        steps.push({
-          label: s.approverRole.charAt(0).toUpperCase()+s.approverRole.slice(1),
-          role: s.approverRole,
-          stepIndex: s.stepIndex,
-          status: approval ? approval.decision : (expense.status === "rejected" ? "skipped" : "pending"),
-          actedAt: approval?.actedAt || null,
-          approver: approval?.approver || null,
-          comment: approval?.comment || null,
-        });
+        if (s.approverType === 'users') {
+          // Collect individual approvals among members
+            const memberApprovals = (expense.approvals || []).filter(a => a.role === 'users');
+            const approvedIds = memberApprovals.map(a => a.approver?.toString());
+            const totalMembers = (s.approverUsers || []).length;
+            let status = 'pending';
+            if (expense.status === 'rejected') status = 'skipped';
+            if (s.approvalMode === 'all' && totalMembers > 0 && approvedIds.length === totalMembers) status = 'approved';
+            if (s.approvalMode === 'any' && approvedIds.length > 0) status = 'approved';
+            steps.push({
+              label: `Members (${totalMembers})`,
+              role: 'users',
+              stepIndex: s.stepIndex,
+              status,
+              actedAt: null,
+              approver: null,
+              comment: null,
+              approvals: memberApprovals.map(a => ({ approver: a.approver, actedAt: a.actedAt, decision: a.decision }))
+            });
+        } else {
+          const approval = (expense.approvals || []).find(a => a.role === s.approverRole);
+          steps.push({
+            label: s.approverRole.charAt(0).toUpperCase()+s.approverRole.slice(1),
+            role: s.approverRole,
+            stepIndex: s.stepIndex,
+            status: approval ? approval.decision : (expense.status === "rejected" ? "skipped" : "pending"),
+            actedAt: approval?.actedAt || null,
+            approver: approval?.approver || null,
+            comment: approval?.comment || null,
+          });
+        }
       }
     }
 

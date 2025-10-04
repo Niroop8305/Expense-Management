@@ -2,11 +2,13 @@ const mongoose = require("mongoose");
 
 const stepSchema = new mongoose.Schema({
   stepIndex: { type: Number, required: true },
-  approverRole: {
+  approverType: { type: String, enum: ["role", "users"], default: "role" },
+  approverRole: { // dynamic or system role name
     type: String,
-    required: true,
-    enum: ["manager", "finance", "director", "admin", "employee"],
+    required: function () { return this.approverType === 'role'; }
   },
+  approverUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // required when approverType==='users'
+  approvalMode: { type: String, enum: ["any", "all"], default: "any" } // for user lists
 });
 
 const workflowSchema = new mongoose.Schema(

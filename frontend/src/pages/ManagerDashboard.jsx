@@ -18,20 +18,49 @@ const ManagerDashboard = ({ roleAlias = 'manager' }) => {
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [timelineData, setTimelineData] = useState(null);
   const [timelineLoading, setTimelineLoading] = useState(false);
+  const [roleDisplay, setRoleDisplay] = useState(null);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const token = localStorage.getItem("token");
 
-    // Temporarily allow finance/director reuse of this dashboard until dedicated pages exist
-    if (!storedUser || !token || !["manager", "finance", "director"].includes(storedUser.role)) {
+    if (!storedUser || !token) {
       navigate("/login");
       return;
     }
 
+    // Redirect employees / admins to their own dashboards
+    if (storedUser.role === 'employee') {
+      navigate('/employee/dashboard');
+      return;
+    }
+    if (storedUser.role === 'admin') {
+      navigate('/admin/dashboard');
+      return;
+    }
+    // Finance & Director already have their own dedicated dashboards; allow them here only if they arrived intentionally
+    // Any other custom role (e.g. cfo) is treated as an approver and allowed to use this view.
+
     setUser(storedUser);
     fetchData(token);
+    fetchRoleMeta(token, storedUser.role);
   }, [navigate]);
+
+  const fetchRoleMeta = async (token, roleName) => {
+    try {
+      // system roles already have capitalized label
+      if (["manager","finance","director"].includes(roleName)) {
+        setRoleDisplay(roleName.charAt(0).toUpperCase()+roleName.slice(1));
+        return;
+      }
+      const res = await axios.get('http://localhost:5000/api/roles', { headers: { Authorization: `Bearer ${token}` }});
+      const match = (res.data.roles || []).find(r => r.name === roleName);
+      if (match) setRoleDisplay(match.displayName || match.name);
+      else setRoleDisplay(roleName.charAt(0).toUpperCase()+roleName.slice(1));
+    } catch (e) {
+      setRoleDisplay(roleName.charAt(0).toUpperCase()+roleName.slice(1));
+    }
+  };
 
   const fetchData = async (token) => {
     try {
@@ -168,7 +197,7 @@ const ManagerDashboard = ({ roleAlias = 'manager' }) => {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{storedUser.role.charAt(0).toUpperCase()+storedUser.role.slice(1)} Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{(roleDisplay || user.role.charAt(0).toUpperCase()+user.role.slice(1))} Dashboard</h1>
             <p className="text-sm text-gray-600">
               {user.company.name} • {user.company.currency}
             </p>

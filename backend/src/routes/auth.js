@@ -45,6 +45,7 @@ router.post("/register-company", async (req, res) => {
       email: adminEmail,
       password: hashed,
       role: "admin",
+      roleName: "admin", // keep roleName in sync
       company: company._id,
     });
     await admin.save();
@@ -87,11 +88,18 @@ router.post("/login", async (req, res) => {
     }
 
     // Generate JWT token
+    // ensure roleName is populated (backfill legacy docs)
+    if (!user.roleName) {
+      user.roleName = user.role;
+      try { await user.save(); } catch (e) { /* ignore */ }
+    }
+
     const token = jwt.sign(
       {
         userId: user._id,
         email: user.email,
         role: user.role,
+        roleName: user.roleName,
         companyId: user.company._id,
       },
       process.env.JWT_SECRET,
@@ -106,6 +114,7 @@ router.post("/login", async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        roleName: user.roleName,
         company: {
           id: user.company._id,
           name: user.company.name,
@@ -116,6 +125,31 @@ router.post("/login", async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/auth/me - return server-side view of current authenticated user (debug / client sync)
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).populate('company').select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    return res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        roleName: user.roleName,
+        company: user.company ? {
+          id: user.company._id,
+          name: user.company.name,
+          currency: user.company.currency
+        } : null
+      },
+      tokenClaims: req.user
+    });
+  } catch (e) {
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

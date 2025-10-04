@@ -31,18 +31,19 @@ const Login = () => {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      // Redirect based on role
+      // Redirect based on role (fallback: any non-employee custom approver role -> manager dashboard UI)
       const role = response.data.user.role;
       if (role === "admin") {
         navigate("/admin/dashboard");
-      } else if (role === "manager") {
-        navigate("/manager/dashboard");
-      } else if (role === "finance") {
-        navigate("/finance/dashboard");
-      } else if (role === "director") {
-        navigate("/director/dashboard");
+      } else if (role === 'employee') {
+        navigate('/employee/dashboard');
       } else {
-        navigate("/employee/dashboard");
+        // Any approver role (system or dynamic) uses unified approver dashboard
+        // Preserve legacy specific paths for deep links
+        if (role === 'finance') navigate('/finance/dashboard');
+        else if (role === 'director') navigate('/director/dashboard');
+        else if (role === 'manager') navigate('/manager/dashboard');
+        else navigate('/manager/dashboard'); // dynamic role fallback
       }
     } catch (err) {
       setError(

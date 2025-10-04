@@ -88,6 +88,24 @@ const EmployeeDashboard = () => {
     }
   };
 
+  // When workflow changes, auto-set manager pre-approval: false if first step isn't manager
+  useEffect(() => {
+    if (!newExpense.workflowId) return; // no workflow chosen
+    const wf = workflows.find(w => w._id === newExpense.workflowId);
+    if (!wf || !wf.steps || wf.steps.length === 0) return;
+    const first = wf.steps.sort((a,b)=>a.stepIndex-b.stepIndex)[0];
+    // If first is a role step and not manager, disable manager pre-approval automatically
+    let shouldManager = newExpense.isManagerApprover;
+    if (first.approverType === 'role' && first.approverRole !== 'manager') {
+      if (newExpense.isManagerApprover) {
+        shouldManager = false;
+      }
+    }
+    if (shouldManager !== newExpense.isManagerApprover) {
+      setNewExpense(ne => ({ ...ne, isManagerApprover: shouldManager }));
+    }
+  }, [newExpense.workflowId, workflows]);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -432,6 +450,9 @@ const EmployeeDashboard = () => {
                       <option key={wf._id} value={wf._id}>{wf.name}</option>
                     ))}
                   </select>
+                  {newExpense.workflowId && (
+                    <p className="mt-1 text-xs text-gray-500">Manager step will {newExpense.isManagerApprover ? '':'NOT '}run first (auto-set based on workflow).</p>
+                  )}
                 </div>
 
                 <div>

@@ -17,6 +17,9 @@ const AdminDashboard = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [activeTab, setActiveTab] = useState("users");
+  const [roles, setRoles] = useState([]);
+  const [newRole, setNewRole] = useState({ name: '', displayName: '', isApprover: true });
+  const [roleMessage, setRoleMessage] = useState('');
 
   const [newUser, setNewUser] = useState({
     name: "",
@@ -45,6 +48,7 @@ const AdminDashboard = () => {
       fetchUsers(token),
       fetchExpenses(token),
       fetchStats(token),
+      fetchRoles(token)
     ]);
   };
 
@@ -89,12 +93,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchRoles = async (token) => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/roles', { headers: { Authorization: `Bearer ${token}` } });
+      setRoles(res.data.roles || []);
+    } catch (e) { console.error('Error fetching roles', e); }
+  };
+
+  const createRole = async (e) => {
+    e.preventDefault();
+    setRoleMessage('');
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('http://localhost:5000/api/roles', newRole, { headers: { Authorization: `Bearer ${token}` } });
+      setRoleMessage('Role created');
+      setNewRole({ name: '', displayName: '', isApprover: true });
+      fetchRoles(token);
+    } catch (e) {
+      setRoleMessage(e.response?.data?.message || 'Failed to create role');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
   };
 
+  const systemRoles = ["employee","manager","finance","director","admin"]; // for grouping
   const handleCreateUser = async (e) => {
     e.preventDefault();
     setError("");
@@ -318,6 +344,14 @@ const AdminDashboard = () => {
             >
               All Expenses ({expenses.length})
             </button>
+            <button
+              onClick={() => setActiveTab('roles')}
+              className={`px-6 py-3 border-b-2 font-medium text-sm ${
+                activeTab === 'roles'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >Roles ({roles.length})</button>
           </nav>
         </div>
 
@@ -401,10 +435,19 @@ const AdminDashboard = () => {
                         }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="employee">Employee</option>
-                        <option value="manager">Manager</option>
-                        <option value="finance">Finance</option>
-                        <option value="director">Director</option>
+                        <optgroup label="System Roles">
+                          <option value="employee">Employee</option>
+                          <option value="manager">Manager</option>
+                          <option value="finance">Finance</option>
+                          <option value="director">Director</option>
+                        </optgroup>
+                        {roles.filter(r => !systemRoles.includes(r.name)).length > 0 && (
+                          <optgroup label="Custom Roles">
+                            {roles.filter(r => !systemRoles.includes(r.name)).map(r => (
+                              <option key={r._id} value={r.name}>{r.displayName || r.name}</option>
+                            ))}
+                          </optgroup>
+                        )}
                       </select>
                     </div>
 
@@ -496,21 +539,18 @@ const AdminDashboard = () => {
                           <div className="text-sm text-gray-600">{u.email}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              u.role === "admin"
-                                ? "bg-purple-100 text-purple-800"
-                                : u.role === "manager"
-                                ? "bg-blue-100 text-blue-800"
-                                : u.role === "finance"
-                                ? "bg-amber-100 text-amber-800"
-                                : u.role === "director"
-                                ? "bg-indigo-100 text-indigo-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {u.role.charAt(0).toUpperCase() + u.role.slice(1)}
-                          </span>
+                          {(() => {
+                            const roleMeta = roles.find(r => r.name === u.role);
+                            const label = roleMeta?.displayName || (u.role.charAt(0).toUpperCase() + u.role.slice(1));
+                            const baseClass = u.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                              u.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                              u.role === 'finance' ? 'bg-amber-100 text-amber-800' :
+                              u.role === 'director' ? 'bg-indigo-100 text-indigo-800' :
+                              'bg-green-100 text-green-800';
+                            return (
+                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${baseClass}`}>{label}</span>
+                            );
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {u.manager?.name || "-"}
@@ -585,46 +625,38 @@ const AdminDashboard = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Role
-                      </label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
                       <select
                         value={editingUser.role}
-                        onChange={(e) =>
-                          setEditingUser({
-                            ...editingUser,
-                            role: e.target.value,
-                          })
-                        }
+                        onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="employee">Employee</option>
-                        <option value="manager">Manager</option>
-                        <option value="finance">Finance</option>
-                        <option value="director">Director</option>
+                        <optgroup label="System Roles">
+                          <option value="employee">Employee</option>
+                          <option value="manager">Manager</option>
+                          <option value="finance">Finance</option>
+                          <option value="director">Director</option>
+                        </optgroup>
+                        {roles.filter(r => !systemRoles.includes(r.name)).length > 0 && (
+                          <optgroup label="Custom Roles">
+                            {roles.filter(r => !systemRoles.includes(r.name)).map(r => (
+                              <option key={r._id} value={r.name}>{r.displayName || r.name}</option>
+                            ))}
+                          </optgroup>
+                        )}
                       </select>
                     </div>
-
                     {editingUser.role === "employee" && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Assign Manager (Optional)
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Assign Manager (Optional)</label>
                         <select
                           value={editingUser.managerId}
-                          onChange={(e) =>
-                            setEditingUser({
-                              ...editingUser,
-                              managerId: e.target.value,
-                            })
-                          }
+                          onChange={(e) => setEditingUser({ ...editingUser, managerId: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">No Manager</option>
                           {managers.map((manager) => (
-                            <option key={manager._id} value={manager._id}>
-                              {manager.name} ({manager.role})
-                            </option>
+                            <option key={manager._id} value={manager._id}>{manager.name} ({manager.role})</option>
                           ))}
                         </select>
                       </div>
@@ -755,6 +787,59 @@ const AdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+        {activeTab === 'roles' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-lg shadow p-6 order-2 md:order-1 md:col-span-2">
+              <h2 className="text-xl font-bold mb-4">Roles</h2>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left bg-gray-50">
+                    <th className="px-3 py-2">Name</th>
+                    <th className="px-3 py-2">Display</th>
+                    <th className="px-3 py-2">Approver?</th>
+                    <th className="px-3 py-2">System</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {roles.map(r => (
+                    <tr key={r._id} className="border-b last:border-0">
+                      <td className="px-3 py-2 font-mono text-xs">{r.name}</td>
+                      <td className="px-3 py-2">{r.displayName || '-'}</td>
+                      <td className="px-3 py-2">{r.isApprover ? 'Yes':'No'}</td>
+                      <td className="px-3 py-2">{r.isSystem ? 'Yes':'No'}</td>
+                    </tr>
+                  ))}
+                  {roles.length === 0 && (
+                    <tr><td className="px-3 py-4 text-center text-gray-500" colSpan={4}>No roles yet</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6 order-1 md:order-2">
+              <h2 className="text-lg font-semibold mb-3">Create Role</h2>
+              {roleMessage && <div className="mb-3 text-xs text-blue-600">{roleMessage}</div>}
+              <form onSubmit={createRole} className="space-y-3 text-sm">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Name (identifier)</label>
+                  <input value={newRole.name} onChange={(e)=>setNewRole({...newRole, name: e.target.value.toLowerCase()})} required className="w-full border px-2 py-1 rounded" placeholder="e.g. cfo" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Display Name</label>
+                  <input value={newRole.displayName} onChange={(e)=>setNewRole({...newRole, displayName: e.target.value})} className="w-full border px-2 py-1 rounded" placeholder="e.g. CFO" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Approver?</label>
+                  <select value={newRole.isApprover ? 'yes':'no'} onChange={(e)=>setNewRole({...newRole, isApprover: e.target.value==='yes'})} className="w-full border px-2 py-1 rounded">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Create</button>
+              </form>
+              <p className="text-[10px] text-gray-500 mt-3 leading-relaxed">System roles (admin/employee) cannot be recreated. Newly created approver roles appear in the Workflow Builder under role steps.</p>
             </div>
           </div>
         )}

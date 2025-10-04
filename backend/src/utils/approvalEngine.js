@@ -14,13 +14,28 @@ function managerApproved(expense) {
  */
 function getCurrentRequiredRole(expense) {
   if (expense.status !== "pending") return null;
-  // Manager pre-step
   if (expense.isManagerApprover && !managerApproved(expense)) return "manager";
-  if (!expense.workflow) return null; // no configured workflow
+  if (!expense.workflow) return null;
   const wf = expense.workflow.steps ? expense.workflow : null;
   if (!wf) return null;
-  if (expense.currentStep >= wf.steps.length) return null; // done
-  return wf.steps[expense.currentStep].approverRole;
+  if (expense.currentStep >= wf.steps.length) return null;
+  const step = wf.steps[expense.currentStep];
+  if (step.approverType === 'role') return step.approverRole; // backward compatibility
+  return 'users';
+}
+
+// For user-based steps: determine if the step is satisfied
+function isUserStepSatisfied(expense) {
+  if (!expense.workflow || expense.currentStep >= expense.workflow.steps.length) return false;
+  const step = expense.workflow.steps[expense.currentStep];
+  if (step.approverType !== 'users') return false;
+  const approvals = expense.approvals || [];
+  const approvalsForUsers = approvals.filter(a => step.approverUsers.some(u => u.toString() === a.approver?.toString()) && a.decision === 'approved');
+  if (step.approvalMode === 'all') {
+    return approvalsForUsers.length === step.approverUsers.length;
+  }
+  // any
+  return approvalsForUsers.length > 0;
 }
 
 /**
@@ -86,15 +101,13 @@ async function progressExpense(expenseId) {
 
   // If workflow defined, ensure currentStep pointer is within bounds
   if (expense.workflow && expense.workflow.steps) {
-    // If a step's role has just approved, and all approvals contain that role exactly once, advance
-    const currentRole = getCurrentRequiredRole(expense); // role required BEFORE potential advance
-    if (currentRole) {
-      // still waiting on that role; nothing to do
-    } else {
-      // No current required role -> maybe completed all steps
+    const wf = expense.workflow;
+    if (expense.currentStep < wf.steps.length) {
+      const step = wf.steps[expense.currentStep];
+      if (step.approverType === 'users' && isUserStepSatisfied(expense)) {
+        expense.currentStep += 1;
+      }
     }
-    // If manager has approved and we haven't started steps yet (currentStep === 0)
-    // we only advance when a step approver approves; handled in route logic.
   }
 
   // Evaluate conditional rules (percentage / special approver) possibly after each approval
