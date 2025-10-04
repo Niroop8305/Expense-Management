@@ -25,6 +25,8 @@ const EmployeeDashboard = () => {
     description: "",
     date: new Date().toISOString().split("T")[0],
   });
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [receiptPreview, setReceiptPreview] = useState(null);
 
   const categories = [
     "Travel",
@@ -73,6 +75,49 @@ const EmployeeDashboard = () => {
     navigate("/login");
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setReceiptFile(file);
+      // Create preview for images
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setReceiptPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setReceiptPreview(null);
+      }
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:5000/api/expenses/export/csv",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        }
+      );
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `expenses-${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setSuccess("Expenses exported successfully!");
+    } catch (err) {
+      setError("Failed to export expenses");
+    }
+  };
+
   const handleSubmitExpense = async (e) => {
     e.preventDefault();
     setError("");
@@ -81,11 +126,27 @@ const EmployeeDashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("amount", newExpense.amount);
+      formData.append("currency", newExpense.currency);
+      formData.append("category", newExpense.category);
+      formData.append("description", newExpense.description);
+      formData.append("date", newExpense.date);
+
+      if (receiptFile) {
+        formData.append("receipt", receiptFile);
+      }
+
       const response = await axios.post(
         "http://localhost:5000/api/expenses/submit",
-        newExpense,
+        formData,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
@@ -98,6 +159,8 @@ const EmployeeDashboard = () => {
         description: "",
         date: new Date().toISOString().split("T")[0],
       });
+      setReceiptFile(null);
+      setReceiptPreview(null);
       fetchExpenses(token);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to submit expense");
@@ -158,11 +221,30 @@ const EmployeeDashboard = () => {
               {user.company.name} • {user.company.currency}
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <div className="text-right">
               <p className="text-sm font-medium text-gray-900">{user.name}</p>
               <p className="text-xs text-gray-600">{user.role}</p>
             </div>
+            <button
+              onClick={handleExportCSV}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center space-x-2"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <span>Export CSV</span>
+            </button>
             <button
               onClick={() => navigate("/settings")}
               className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
@@ -320,6 +402,47 @@ const EmployeeDashboard = () => {
                     placeholder="Describe the expense..."
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Receipt (Optional)
+                    <span className="text-xs text-gray-500 ml-2">
+                      (Max 5MB - Images or PDF)
+                    </span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={handleFileChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  {receiptPreview && (
+                    <div className="mt-3">
+                      <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                      <img
+                        src={receiptPreview}
+                        alt="Receipt preview"
+                        className="max-w-xs h-auto rounded-lg border border-gray-300"
+                      />
+                    </div>
+                  )}
+                  {receiptFile && !receiptPreview && (
+                    <div className="mt-2 flex items-center text-sm text-gray-600">
+                      <svg
+                        className="w-5 h-5 mr-2 text-green-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {receiptFile.name}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end space-x-3">
@@ -457,6 +580,9 @@ const EmployeeDashboard = () => {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Receipt
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Reviewed By
                   </th>
                 </tr>
@@ -465,7 +591,7 @@ const EmployeeDashboard = () => {
                 {filteredExpenses.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       No expenses found
@@ -500,6 +626,33 @@ const EmployeeDashboard = () => {
                           {expense.status.charAt(0).toUpperCase() +
                             expense.status.slice(1)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {expense.receiptUrl ? (
+                          <a
+                            href={`http://localhost:5000${expense.receiptUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 flex items-center space-x-1"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"
+                              />
+                            </svg>
+                            <span>View</span>
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {expense.reviewedBy?.name || "-"}

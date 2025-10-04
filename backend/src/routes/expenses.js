@@ -3,48 +3,55 @@ const router = express.Router();
 const Expense = require("../models/Expense");
 const User = require("../models/User");
 const { authenticate, isManagerOrAdmin } = require("../middleware/auth");
+const upload = require("../middleware/upload");
 
-// POST /api/expenses/submit - Submit a new expense
-router.post("/submit", authenticate, async (req, res) => {
-  try {
-    const { amount, currency, category, description, date } = req.body;
+// POST /api/expenses/submit - Submit a new expense (with optional receipt)
+router.post(
+  "/submit",
+  authenticate,
+  upload.single("receipt"),
+  async (req, res) => {
+    try {
+      const { amount, currency, category, description, date } = req.body;
 
-    // Validate required fields
-    if (!amount || !category || !description || !date) {
-      return res.status(400).json({ message: "All fields are required" });
+      // Validate required fields
+      if (!amount || !category || !description || !date) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      // Validate amount is positive
+      if (amount <= 0) {
+        return res.status(400).json({ message: "Amount must be positive" });
+      }
+
+      // Create new expense
+      const expense = new Expense({
+        amount,
+        currency: currency || "USD",
+        category,
+        description,
+        date: new Date(date),
+        submittedBy: req.user.userId,
+        company: req.user.companyId,
+        status: "pending",
+        receiptUrl: req.file ? `/uploads/receipts/${req.file.filename}` : null,
+      });
+
+      await expense.save();
+
+      // Populate submittedBy details
+      await expense.populate("submittedBy", "name email");
+
+      return res.status(201).json({
+        message: "Expense submitted successfully",
+        expense,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Server error" });
     }
-
-    // Validate amount is positive
-    if (amount <= 0) {
-      return res.status(400).json({ message: "Amount must be positive" });
-    }
-
-    // Create new expense
-    const expense = new Expense({
-      amount,
-      currency: currency || "USD",
-      category,
-      description,
-      date: new Date(date),
-      submittedBy: req.user.userId,
-      company: req.user.companyId,
-      status: "pending",
-    });
-
-    await expense.save();
-
-    // Populate submittedBy details
-    await expense.populate("submittedBy", "name email");
-
-    return res.status(201).json({
-      message: "Expense submitted successfully",
-      expense,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
   }
-});
+);
 
 // GET /api/expenses - Get expenses based on user role
 router.get("/", authenticate, async (req, res) => {
@@ -315,5 +322,71 @@ router.get(
     }
   }
 );
+
+// GET /api/expenses/export/csv - Export expenses to CSV
+router.get("/export/csv", authenticate, async (req, res) => {
+  try {
+    let query = { company: req.user.companyId };
+    let expenses;
+
+    // Role-based filtering
+    if (req.user.role === "admin") {
+      expenses = await Expense.find(query)
+        .populate("submittedBy", "name email")
+        .populate("reviewedBy", "name email")
+        .sort({ date: -1 });
+    } else if (req.user.role === "manager") {
+      const teamMembers = await User.find({
+        company: req.user.companyId,
+        manager: req.user.userId,
+      }).select("_id");
+
+      const teamMemberIds = teamMembers.map((member) => member._id);
+      teamMemberIds.push(req.user.userId);
+      query.submittedBy = { $in: teamMemberIds };
+
+      expenses = await Expense.find(query)
+        .populate("submittedBy", "name email")
+        .populate("reviewedBy", "name email")
+        .sort({ date: -1 });
+    } else {
+      query.submittedBy = req.user.userId;
+      expenses = await Expense.find(query)
+        .populate("submittedBy", "name email")
+        .populate("reviewedBy", "name email")
+        .sort({ date: -1 });
+    }
+
+    // Generate CSV content
+    const csvHeader =
+      "Date,Employee,Email,Category,Description,Amount,Currency,Status,Reviewed By,Reviewed At,Rejection Reason\n";
+
+    const csvRows = expenses.map((exp) => {
+      const date = new Date(exp.date).toISOString().split("T")[0];
+      const reviewedAt = exp.reviewedAt
+        ? new Date(exp.reviewedAt).toISOString().split("T")[0]
+        : "-";
+      const reviewedBy = exp.reviewedBy?.name || "-";
+      const rejectionReason = exp.rejectionReason?.replace(/,/g, ";") || "-";
+      const description = exp.description.replace(/,/g, ";");
+
+      return `${date},"${exp.submittedBy.name}","${exp.submittedBy.email}","${exp.category}","${description}",${exp.amount},${exp.currency},${exp.status},"${reviewedBy}",${reviewedAt},"${rejectionReason}"`;
+    });
+
+    const csv = csvHeader + csvRows.join("\n");
+
+    // Set headers for file download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=expenses-${Date.now()}.csv`
+    );
+
+    return res.send(csv);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
 
 module.exports = router;
