@@ -397,7 +397,14 @@ const ManagerDashboard = () => {
                         {expense.description}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {formatCurrency(expense.amount, expense.currency)}
+                        <div>
+                          {formatCurrency(expense.amount, expense.currency)}
+                          {expense.convertedAmount && expense.currency !== expense.convertedCurrency && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              ≈ {formatCurrency(expense.convertedAmount, expense.convertedCurrency)}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                         <button
