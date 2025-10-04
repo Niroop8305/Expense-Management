@@ -15,20 +15,22 @@ import ApproverDashboard from "./pages/ApproverDashboard.jsx";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
-    <Route path="/manager/dashboard" element={<ApproverDashboard />} />
-    <Route path="/finance/dashboard" element={<ApproverDashboard />} />
-    <Route path="/director/dashboard" element={<ApproverDashboard />} />
-    <Route path="/cfo/dashboard" element={<ApproverDashboard />} />
-        <Route path="/settings" element={<Settings />} />
-  <Route path="/admin/workflows" element={<WorkflowBuilder />} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
+          <Route path="/manager/dashboard" element={<ApproverDashboard />} />
+          <Route path="/finance/dashboard" element={<ApproverDashboard />} />
+          <Route path="/director/dashboard" element={<ApproverDashboard />} />
+          <Route path="/cfo/dashboard" element={<ApproverDashboard />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/admin/workflows" element={<WorkflowBuilder />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
