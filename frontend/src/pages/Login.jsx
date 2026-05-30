@@ -62,7 +62,7 @@ const Login = () => {
         <ThemeToggle />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
+      <div className="bg-card rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/50 backdrop-blur-md p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
         <div className="text-center mb-8 animate-fadeIn">
           <div className="inline-block p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full mb-4 animate-bounce">
             <svg
@@ -79,10 +79,10 @@ const Login = () => {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-primary mb-2">
             Welcome Back
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted">
             Sign in to your account
           </p>
         </div>
@@ -108,7 +108,7 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="animate-slideInLeft animate-stagger-1">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Email Address
             </label>
             <div className="relative">
@@ -133,14 +133,14 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400 dark:hover:border-gray-500"
+                className="w-full pl-10 pr-4 py-3 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400 dark:hover:border-gray-500"
                 placeholder="you@example.com"
               />
             </div>
           </div>
 
           <div className="animate-slideInLeft animate-stagger-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Password
             </label>
             <div className="relative">
@@ -165,7 +165,7 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400 dark:hover:border-gray-500"
+                className="w-full pl-10 pr-4 py-3 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth hover:border-gray-400 dark:hover:border-gray-500"
                 placeholder="••••••••"
               />
             </div>
@@ -212,7 +212,7 @@ const Login = () => {
         </form>
 
         <div className="mt-6 text-center animate-fadeIn animate-stagger-4">
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted">
             Don't have an account?{" "}
             <button
               onClick={() => navigate("/register")}
@@ -221,6 +221,31 @@ const Login = () => {
               Register your company
             </button>
           </p>
+        </div>
+
+        {/* Demo Credentials */}
+        <div className="mt-8 pt-6 border-t border-border animate-fadeIn animate-stagger-5">
+          <h3 className="text-sm font-semibold text-muted uppercase tracking-wider mb-4 text-center">
+            Demo Accounts
+          </h3>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { label: 'Admin', email: 'admin@gmail.com' },
+              { label: 'Manager', email: 'manager@gmail.com' },
+              { label: 'CFO', email: 'cfo@gmail.com' },
+              { label: 'Employee', email: 'employee8@gmail.com' }
+            ].map((demo, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setFormData({ email: demo.email, password: '123456' })}
+                className="px-3 py-1.5 text-xs font-medium bg-secondary text-primary rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-700 dark:hover:text-blue-400 transition-colors border border-border"
+                title={demo.email}
+              >
+                {demo.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

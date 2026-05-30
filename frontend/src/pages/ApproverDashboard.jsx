@@ -198,24 +198,24 @@ const ApproverDashboard = () => {
   const isManager = user.role === "manager";
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-      <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
+    <div className="min-h-screen bg-background transition-colors duration-300">
+      <header className="bg-card shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-primary">
               {roleDisplay || cap(user.role)} Dashboard
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted">
               {user.company.name} • {user.company.currency}
             </p>
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-primary">
                 {user.name}
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-muted">
                 {roleDisplay || user.role}
               </p>
             </div>
@@ -261,7 +261,7 @@ const ApproverDashboard = () => {
 
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
               <p className="text-sm text-yellow-800 dark:text-yellow-300">
                 Pending
               </p>
@@ -269,7 +269,7 @@ const ApproverDashboard = () => {
                 {stats.totalPending}
               </p>
             </div>
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
               <p className="text-sm text-green-800 dark:text-green-300">
                 Approved
               </p>
@@ -277,13 +277,13 @@ const ApproverDashboard = () => {
                 {stats.totalApproved}
               </p>
             </div>
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
               <p className="text-sm text-red-800 dark:text-red-300">Rejected</p>
               <p className="text-3xl font-bold text-red-900 dark:text-red-200">
                 {stats.totalRejected}
               </p>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
               <p className="text-sm text-blue-800 dark:text-blue-300">
                 Approved Amount
               </p>
@@ -300,8 +300,8 @@ const ApproverDashboard = () => {
         {/* Charts Section */}
         {myExpenses.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="none"
@@ -326,8 +326,8 @@ const ApproverDashboard = () => {
               <ExpenseByCategoryChart expenses={myExpenses} />
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="none"
@@ -346,8 +346,8 @@ const ApproverDashboard = () => {
               <ExpenseStatusChart expenses={myExpenses} />
             </div>
 
-            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="lg:col-span-2 bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="none"
@@ -368,18 +368,18 @@ const ApproverDashboard = () => {
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm mb-6">
+          <div className="px-6 py-4 border-b border-border">
+            <h2 className="text-xl font-bold text-primary">
               Pending Approvals
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-muted mt-1">
               {pendingExpenses.length} expenses waiting for your action
             </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+              <thead className="bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Employee
@@ -404,12 +404,12 @@ const ApproverDashboard = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-card divide-y divide-gray-200 dark:divide-gray-700">
                 {pendingExpenses.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                      className="px-6 py-8 text-center text-muted"
                     >
                       No pending approvals
                     </td>
@@ -418,29 +418,29 @@ const ApproverDashboard = () => {
                   pendingExpenses.map((expense) => (
                     <tr
                       key={expense._id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className="hover:bg-secondary"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-primary">
                           {expense.submittedBy.name}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-muted">
                           {expense.submittedBy.email}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                         {new Date(expense.date).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                         {expense.category}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300 max-w-xs">
                         {expense.description}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
                         {formatCurrency(expense.amount, expense.currency)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-muted">
                         {expense._requiredRole || "—"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
@@ -473,18 +473,18 @@ const ApproverDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm">
+          <div className="px-6 py-4 border-b border-border">
+            <h2 className="text-xl font-bold text-primary">
               {isManager ? "All Team Expenses" : "My Submitted Expenses"}
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-muted mt-1">
               Total: {myExpenses.length} expenses
             </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+              <thead className="bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Employee
@@ -509,12 +509,12 @@ const ApproverDashboard = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-card divide-y divide-gray-200 dark:divide-gray-700">
                 {myExpenses.length === 0 ? (
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                      className="px-6 py-8 text-center text-muted"
                     >
                       No expenses found
                     </td>
@@ -523,17 +523,17 @@ const ApproverDashboard = () => {
                   myExpenses.map((expense) => (
                     <tr
                       key={expense._id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className="hover:bg-secondary"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-primary">
                           {expense.submittedBy.name}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                         {new Date(expense.date).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                         {expense.category}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300 max-w-xs">
@@ -544,7 +544,7 @@ const ApproverDashboard = () => {
                           </p>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
                         {formatCurrency(expense.amount, expense.currency)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -557,7 +557,7 @@ const ApproverDashboard = () => {
                             expense.status.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                         {expense.reviewedBy?.name || "-"}
                       </td>
                     </tr>
@@ -571,25 +571,25 @@ const ApproverDashboard = () => {
 
       {showRejectModal && selectedExpense && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-primary mb-4">
               Reject Expense
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-muted mb-4">
               Employee: {selectedExpense.submittedBy.name}
               <br />
               Amount:{" "}
               {formatCurrency(selectedExpense.amount, selectedExpense.currency)}
             </p>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Rejection Reason *
               </label>
               <textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 placeholder-gray-400 dark:placeholder-gray-500"
+                className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="Explain the reason..."
               />
             </div>
@@ -600,7 +600,7 @@ const ApproverDashboard = () => {
                   setSelectedExpense(null);
                   setRejectionReason("");
                 }}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 transition"
+                className="px-4 py-2 border border-border rounded-lg hover:bg-secondary dark:text-gray-300 transition"
               >
                 Cancel
               </button>
@@ -618,9 +618,9 @@ const ApproverDashboard = () => {
 
       {timelineOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-3xl w-full p-6 max-h-[80vh] overflow-auto">
+          <div className="bg-card rounded-lg max-w-3xl w-full p-6 max-h-[80vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h3 className="text-xl font-bold text-primary">
                 Approval Timeline
               </h3>
               <button
@@ -628,57 +628,57 @@ const ApproverDashboard = () => {
                   setTimelineOpen(false);
                   setTimelineData(null);
                 }}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                className="text-muted hover:text-gray-800 dark:hover:text-gray-200"
               >
                 ✕
               </button>
             </div>
             {timelineLoading && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted">
                 Loading...
               </p>
             )}
             {!timelineLoading && timelineData && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <p className="text-sm text-muted mb-1">
                     Expense
                   </p>
-                  <div className="text-sm bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded p-3">
-                    <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="text-sm bg-secondary border dark:border-gray-600 rounded p-3">
+                    <div className="font-medium text-primary">
                       {timelineData.expense.description}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-muted">
                       Status: {timelineData.expense.status}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <p className="text-sm font-medium text-primary mb-2">
                     Sequential Steps
                   </p>
                   <ol className="space-y-2">
                     {timelineData.steps.map((step) => (
                       <li
                         key={step.stepIndex + step.role}
-                        className="border dark:border-gray-600 rounded p-3 flex justify-between items-start bg-white dark:bg-gray-700 shadow-sm"
+                        className="border dark:border-gray-600 rounded p-3 flex justify-between items-start bg-white dark:bg-secondary shadow-sm"
                       >
                         <div>
-                          <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <div className="text-sm font-semibold text-primary">
                             {step.label}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="text-xs text-muted">
                             Role: {step.role}
                           </div>
                           {step.comment && (
-                            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            <div className="text-xs text-muted mt-1">
                               Comment: {step.comment}
                             </div>
                           )}
                           {step.role === "users" &&
                             step.approvals &&
                             step.approvals.length > 0 && (
-                              <ul className="mt-1 text-[11px] text-gray-600 dark:text-gray-400 list-disc ml-4">
+                              <ul className="mt-1 text-[11px] text-muted list-disc ml-4">
                                 {step.approvals.map((a) => (
                                   <li key={a.approver}>
                                     {a.approver} — {a.decision}
@@ -695,7 +695,7 @@ const ApproverDashboard = () => {
                               ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
                               : step.status === "pending"
                               ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                              : "bg-secondary text-gray-600 dark:text-gray-300"
                           }`}
                         >
                           {step.status}
@@ -705,11 +705,11 @@ const ApproverDashboard = () => {
                   </ol>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <p className="text-sm font-medium text-primary mb-2">
                     Audit Log
                   </p>
                   {timelineData.auditLogs.length === 0 ? (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted">
                       No audit events yet.
                     </p>
                   ) : (
@@ -717,19 +717,19 @@ const ApproverDashboard = () => {
                       {timelineData.auditLogs.map((log) => (
                         <li
                           key={log._id}
-                          className="border dark:border-gray-600 rounded p-2 bg-gray-50 dark:bg-gray-700 flex justify-between"
+                          className="border dark:border-gray-600 rounded p-2 bg-secondary flex justify-between"
                         >
                           <div className="text-gray-900 dark:text-gray-300">
                             <span className="font-medium">{log.action}</span> by{" "}
                             {log.user?.name || "User"}
                             {log.comment && (
-                              <span className="text-gray-600 dark:text-gray-400">
+                              <span className="text-muted">
                                 {" "}
                                 — {log.comment}
                               </span>
                             )}
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-muted">
                             {new Date(log.timestamp).toLocaleString()}
                           </span>
                         </li>

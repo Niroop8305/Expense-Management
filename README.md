@@ -1,405 +1,97 @@
-# Expense Management System
+# 💰 Enterprise Expense Management System
 
-A full-stack MERN application for managing company expenses with multi-level approval workflows.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![React](https://img.shields.io/badge/React-18-blue)
+![Node](https://img.shields.io/badge/Node.js-18-green)
+![MongoDB](https://img.shields.io/badge/MongoDB-6.0-brightgreen)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38B2AC)
 
-## Tech Stack
+A highly scalable, multi-tenant Expense Management System designed for enterprises. It features robust role-based access control, customizable multi-step approval workflows, and an elegant, stunning dark/light mode UI built with React and TailwindCSS.
 
-### Frontend
+---
 
-- **Build Tool**: Vite 5.0
-- **Framework**: React 18.2 (JSX)
-- **Styling**: TailwindCSS 3.4
-- **Routing**: React Router DOM 6.20
-- **HTTP Client**: Axios 1.5
-- **Charts**: Chart.js 4.x + react-chartjs-2 5.x
+## ✨ Features
 
-### Backend
+- **Multi-Tenant Architecture**: Register entirely separate companies, each with their own isolated data, users, and workflows.
+- **Dynamic Workflows**: Build custom approval chains (e.g., Employee ➔ Manager ➔ CFO) using an intuitive Workflow Builder. 
+- **Role-Based Access Control**:
+  - `Admin`: Full control over company settings, user provisioning, and workflows.
+  - `Manager`: Approve/Reject expenses for direct reports, view team analytics.
+  - `Approvers (e.g. CFO, Finance)`: Participate in custom workflow chains, view company-wide financials.
+  - `Employee`: Submit expenses, attach receipts, and track approval status.
+- **Stunning UI/UX**: Premium aesthetic with micro-animations, glassmorphism, and a meticulously crafted Semantic CSS Variable theming system (Light/Dark mode).
+- **Analytics & Dashboards**: Beautiful, dynamic charts detailing expense trends, category breakdowns, and approval bottlenecks.
 
-- **Runtime**: Node.js
-- **Framework**: Express.js 4.18
-- **Database**: MongoDB with Mongoose 7.5
-- **Authentication**: JWT (jsonwebtoken)
-- **Password Hashing**: bcryptjs 2.4
-- **File Upload**: Multer
-- **Email**: Nodemailer
+---
 
-## Features (Current Phase)
+## 🏗️ Technology Stack
 
-### Core Features
+- **Frontend**: React (Vite), TailwindCSS, Axios, Chart.js
+- **Backend**: Node.js, Express, Mongoose
+- **Database**: MongoDB (Atlas or Local)
+- **Authentication**: JWT (JSON Web Tokens), bcryptjs
+- **Containerization**: Docker, Docker Compose
 
-- ✅ Company registration with automatic admin user creation
-- ✅ Country-based currency auto-selection (195+ countries)
-- ✅ Secure password hashing with bcrypt
-- ✅ RESTful API architecture
-- ✅ Multi-role dashboards (Admin/Manager/Employee)
-- ✅ Advanced filtering and search
-- ✅ Change password feature
+---
 
-### Security & Authentication
+## 🚀 Quick Start (Local Development)
 
-- ✅ **Forgot Password with Email Verification** (6-digit code, 10-min expiry)
-- ✅ JWT authentication (7-day expiry)
-- ✅ Role-based access control (Admin/Manager/Employee)
-
-### Expense Management
-
-- ✅ **Receipt upload** for expenses (images & PDFs, 5MB limit)
-- ✅ **CSV export** functionality with role-based filtering
-- ✅ Multi-level expense approval workflow
-- ✅ Rejection reasons tracking
-
-### Email Notifications 📧
-
-- ✅ **Password reset** emails with verification code
-- ✅ **Expense submission** notifications to managers
-- ✅ **Expense approval** confirmations to employees
-- ✅ **Expense rejection** notifications with reasons
-- ✅ **Welcome emails** for new users with credentials
-- ✅ Professional HTML email templates (responsive design)
-
-### Data Visualization 📊
-
-- ✅ **Interactive Charts** with Chart.js
-- ✅ **Expense by Category** - Pie/Doughnut chart
-- ✅ **Expense Trends** - Line chart over time
-- ✅ **Status Distribution** - Bar chart (Pending/Approved/Rejected)
-- ✅ **Top Categories** - Horizontal bar chart
-- ✅ Real-time data updates
-- ✅ Responsive chart design
-
-### UI/UX Enhancements
-
-- ✅ **Dark Mode** 🌙 (System preference detection, localStorage persistence)
-- ✅ Comprehensive animations (fadeIn, slideIn, scaleIn, shake, pulse)
-- ✅ Smooth transitions and hover effects
-- ✅ Mobile-responsive design
-- ✅ Color-coded status badges
-- ✅ Loading states and spinners
-- ✅ Toast notifications
-
-## Project Structure
-
-```
-Expense-Management/
-├── backend/          # Express.js API server
-│   ├── src/
-│   │   ├── models/   # Mongoose schemas
-│   │   ├── routes/   # API endpoints
-│   │   └── utils/    # DB connection
-│   └── package.json
-└── frontend/         # Vite + React app
-    ├── src/
-    │   ├── pages/    # React pages
-    │   └── App.jsx
-    └── package.json
-```
-
-## Setup Instructions (Windows PowerShell)
-
-### Prerequisites
-
+### 1. Prerequisites
 - Node.js (v18+)
-- MongoDB (running locally or MongoDB Atlas)
-- Git
+- MongoDB (Local instance or Atlas cluster)
 
-### Backend Setup
-
-1. Navigate to backend folder:
-
-```powershell
+### 2. Backend Setup
+```bash
 cd backend
-```
-
-2. Install dependencies:
-
-```powershell
 npm install
 ```
-
-3. Create `.env` file:
-
-```powershell
-Copy-Item .env.example .env
+Create a `.env` file in the `backend` directory based on the provided `.env.example`:
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/expense_management
+JWT_SECRET=your_super_secret_jwt_key
 ```
-
-4. Update `.env` with your MongoDB connection string if needed.
-
-5. Start the backend server:
-
-```powershell
+Start the backend server:
+```bash
 npm start
 ```
-
-The backend will run on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Open a new terminal and navigate to frontend folder:
-
-```powershell
-cd frontend
+*(Optional)* Seed the database with robust mock data:
+```bash
+node seed.js
 ```
 
-2. Install dependencies:
-
-```powershell
+### 3. Frontend Setup
+```bash
+cd frontend
 npm install
 ```
-
-3. Start the development server:
-
-```powershell
+Start the Vite development server:
+```bash
 npm run dev
 ```
+Navigate to `http://localhost:5173`.
 
-The frontend will run on `http://localhost:5173`
+---
 
-## Visual Charts & Analytics 📊
+## 🐳 Docker Deployment (Production)
 
-The application features comprehensive data visualization using Chart.js to help users understand their expense patterns:
+Deploying the entire stack (MongoDB, Node.js API, and Nginx React SPA) is a breeze using Docker Compose.
 
-### Available Charts
-
-1. **Expense by Category (Pie/Doughnut Chart)**
-
-   - Visual breakdown of expenses by category
-   - Interactive legends
-   - Percentage distribution
-   - Color-coded categories
-
-2. **Expense Trends Over Time (Line Chart)**
-
-   - Track spending patterns over months
-   - Multiple datasets for different categories
-   - Smooth curves with tension
-   - Responsive tooltips
-
-3. **Status Distribution (Bar Chart)**
-
-   - Compare pending, approved, and rejected expenses
-   - Count and amount visualizations
-   - Color-coded by status (yellow/green/red)
-
-4. **Top Spending Categories (Horizontal Bar)**
-   - Identify highest expense categories
-   - Sorted by amount
-   - Easy comparison across categories
-
-### Chart Features
-
-- ✅ **Real-time updates** - Charts refresh with data changes
-- ✅ **Interactive tooltips** - Hover for detailed information
-- ✅ **Responsive design** - Adapts to screen size
-- ✅ **Smooth animations** - Professional transitions
-- ✅ **Role-based data** - Each role sees relevant data
-- ✅ **Custom colors** - Brand-consistent color palette
-- ✅ **Export-ready** - Charts can be exported as images
-
-### Viewing Charts
-
-- **Employee Dashboard**: Personal expense analytics
-- **Manager Dashboard**: Team expense overview
-- **Admin Dashboard**: Company-wide analytics
-
-## Dark Mode 🌙
-
-The application features a complete dark mode implementation for comfortable viewing in low-light conditions:
-
-### Features
-
-- **🎨 Complete UI Coverage**: All pages, components, and charts support dark mode
-- **💾 Persistent Preference**: Your theme choice is saved in localStorage
-- **🔄 System Sync**: Automatically detects your system's dark mode preference
-- **⚡ Instant Toggle**: Switch between light and dark themes with one click
-- **📊 Chart Compatibility**: All Chart.js visualizations adapt to dark mode
-- **🎯 Consistent Design**: Carefully crafted dark color palette for optimal readability
-
-### Supported Components
-
-- ✅ Authentication pages (Login, Register, Forgot Password)
-- ✅ All dashboards (Employee, Manager, Admin)
-- ✅ Settings page
-- ✅ Forms and input fields
-- ✅ Tables and data grids
-- ✅ Charts and visualizations
-- ✅ Status badges and alerts
-- ✅ Navigation headers
-
-### Color Palette
-
-**Dark Mode Colors:**
-
-- Background: `#0f172a` (slate-900)
-- Cards: `#1e293b` (slate-800)
-- Borders: `#334155` (slate-700)
-- Text: `#e2e8f0` (slate-200)
-- Muted Text: `#94a3b8` (slate-400)
-
-### How to Use
-
-1. Look for the **sun/moon toggle button** in the top-right corner of any page
-2. Click to switch between light and dark themes
-3. Your preference is automatically saved for future visits
-
-### Technical Implementation
-
-- **Tailwind CSS**: `darkMode: 'class'` strategy
-- **React Context**: ThemeContext provides global state management
-- **Chart.js**: Dynamic color configuration based on theme
-- **localStorage**: Theme persistence across sessions
-
-## Email Notifications 📧
-
-Automated email notifications keep all stakeholders informed:
-
-### Email Types
-
-1. **Password Reset** - 6-digit verification code (10-min expiry)
-2. **Expense Submitted** - Notify manager of new submissions
-3. **Expense Approved** - Confirm approval to employee
-4. **Expense Rejected** - Notify with rejection reason
-5. **New User Welcome** - Credentials and onboarding info
-
-### Email Features
-
-- ✅ Professional HTML templates
-- ✅ Mobile-responsive design
-- ✅ Color-coded by type
-- ✅ Automatic sending
-- ✅ Error handling & logging
-
-### Configuration
-
-See `EMAIL_SETUP.md` for Gmail configuration instructions.
-
-## API Endpoints
-
-### POST `/api/auth/register-company`
-
-Register a new company with an admin user.
-
-**Request Body:**
-
-```json
-{
-  "companyName": "Acme Corp",
-  "country": "US",
-  "adminName": "John Doe",
-  "adminEmail": "john@acme.com",
-  "adminPassword": "securepassword123"
-}
+1. Ensure you have Docker and Docker Compose installed.
+2. From the root of the project, simply run:
+```bash
+docker-compose up -d --build
 ```
+3. The frontend will be available at `http://localhost:80`, and the backend API will run on `http://localhost:5000`.
 
-**Response:**
+**Note:** For a true production deployment, ensure you update the `VITE_API_URL` environment variables in your frontend build process to point to your live backend domain instead of `localhost`.
 
-```json
-{
-  "message": "Company and admin created",
-  "company": {
-    "id": "...",
-    "name": "Acme Corp",
-    "currency": "USD"
-  },
-  "admin": {
-    "id": "...",
-    "email": "john@acme.com",
-    "name": "John Doe"
-  }
-}
-```
+---
 
-## Supported Features by Role
+## 🤝 Contributing
 
-### Admin 👑
+We welcome contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to submit pull requests, formatting rules, and our code of conduct.
 
-- View all company expenses
-- Manage users (create, edit, delete employees & managers)
-- Approve/reject any expense
-- Access all analytics and reports
-- Export complete company data
-- Change user roles
+## 📄 License
 
-### Manager 👥
-
-- View team expenses
-- Approve/reject team member expenses
-- Submit personal expenses
-- View team analytics
-- Export team expense data
-- Assign expenses to employees
-
-### Employee 👤
-
-- Submit expenses with receipts
-- Track expense status
-- View personal analytics
-- Export personal expense history
-- Update profile & change password
-- Upload receipt images/PDFs
-
-## Supported Countries & Currencies
-
-The system supports **195+ countries** with automatic currency detection via REST Countries API.
-
-**Popular currencies:**
-
-- 🇺🇸 US → USD ($)
-- 🇮🇳 IN → INR (₹)
-- 🇬🇧 GB → GBP (£)
-- 🇪🇺 EU → EUR (€)
-- 🇯🇵 JP → JPY (¥)
-- 🇨🇦 CA → CAD (C$)
-- 🇦🇺 AU → AUD (A$)
-- And 188+ more!
-
-## Documentation
-
-- **EMAIL_SETUP.md** - Gmail configuration for email notifications
-- **EMAIL_NOTIFICATIONS.md** - Complete email system documentation
-- **EMAIL_QUICK_REFERENCE.md** - Quick setup guide for emails
-- **FORGOT_PASSWORD_IMPLEMENTATION.md** - Password reset feature details
-- **HACKATHON_STRATEGY.md** - Feature roadmap and priorities
-
-## Project Highlights
-
-### What Makes This Special
-
-- 🎨 **Professional UI/UX** - Smooth animations, modern design
-- 📊 **Data Visualization** - Interactive charts with Chart.js
-- 📧 **Email Integration** - Automated notifications with HTML templates
-- 🔐 **Security** - JWT auth, password hashing, reset verification
-- 📱 **Responsive** - Works perfectly on mobile and desktop
-- 🌍 **Global** - Supports 195+ countries and currencies
-- 📄 **Receipt Management** - Upload and view receipt images/PDFs
-- 📈 **Analytics** - Real-time expense insights and trends
-- 🔄 **Workflow** - Complete approval/rejection workflow
-- 💾 **Export** - CSV export for reporting
-
-### Architecture Highlights
-
-- RESTful API design
-- JWT-based authentication
-- Role-based access control (RBAC)
-- MongoDB with Mongoose ODM
-- Multer for file uploads
-- Nodemailer for emails
-- React with functional components
-- TailwindCSS for styling
-- Chart.js for data visualization
-
-## Future Enhancements
-
-- [ ] Multi-level approval chains (threshold-based)
-- [ ] Budget tracking and alerts
-- [ ] Expense categories customization
-- [ ] Advanced analytics dashboard
-- [ ] Mobile app (React Native)
-- [ ] Integration with accounting software
-- [ ] Recurring expense templates
-- [ ] Expense report generation (PDF)
-- [ ] Dark mode
-- [ ] Multi-language support
-
-## License
-
-MIT
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

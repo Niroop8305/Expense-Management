@@ -351,38 +351,38 @@ const EmployeeDashboard = () => {
       case "pending":
         return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300";
       default:
-        return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
+        return "bg-secondary text-gray-800 dark:text-gray-300";
     }
   };
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-xl dark:text-white">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
+      <header className="bg-card shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-primary">
               My Expenses
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted">
               {user.company.name} • {user.company.currency}
             </p>
           </div>
           <div className="flex items-center space-x-3">
             <ThemeToggle />
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-primary">
                 {user.name}
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-muted">
                 {user.role}
               </p>
             </div>
@@ -407,7 +407,7 @@ const EmployeeDashboard = () => {
             </button>
             <button
               onClick={() => navigate("/settings")}
-              className="bg-gray-600 dark:bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition"
+              className="bg-gray-600 dark:bg-secondary text-white px-4 py-2 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition"
             >
               Settings
             </button>
@@ -449,15 +449,15 @@ const EmployeeDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
+            <p className="text-sm text-muted">
               Total Expenses
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-primary">
               {expenses.length}
             </p>
           </div>
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
             <p className="text-sm text-yellow-800 dark:text-yellow-400">
               Pending
             </p>
@@ -465,7 +465,7 @@ const EmployeeDashboard = () => {
               {expenses.filter((e) => e.status === "pending").length}
             </p>
           </div>
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
             <p className="text-sm text-green-800 dark:text-green-400">
               Approved
             </p>
@@ -473,7 +473,7 @@ const EmployeeDashboard = () => {
               {expenses.filter((e) => e.status === "approved").length}
             </p>
           </div>
-          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
             <p className="text-sm text-red-800 dark:text-red-400">Rejected</p>
             <p className="text-3xl font-bold text-red-900 dark:text-red-300">
               {expenses.filter((e) => e.status === "rejected").length}
@@ -485,8 +485,8 @@ const EmployeeDashboard = () => {
         {expenses.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Expense by Category Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 animate-fadeIn">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400"
                   fill="none"
@@ -515,8 +515,8 @@ const EmployeeDashboard = () => {
             </div>
 
             {/* Expense Status Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn animate-stagger-1">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 animate-fadeIn animate-stagger-1">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-6 h-6 mr-2 text-green-600"
                   fill="none"
@@ -539,8 +539,8 @@ const EmployeeDashboard = () => {
             </div>
 
             {/* Expense Trends Chart - Full Width */}
-            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn animate-stagger-2">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="lg:col-span-2 bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 animate-fadeIn animate-stagger-2">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-6 h-6 mr-2 text-purple-600 dark:text-purple-400"
                   fill="none"
@@ -576,17 +576,17 @@ const EmployeeDashboard = () => {
 
         {/* Submit Form */}
         {showSubmitForm && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 mb-6">
+            <h2 className="text-xl font-bold text-primary mb-4">
               Submit New Expense
-              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+              <span className="text-sm font-normal text-muted ml-2">
                 (Upload receipt for auto-fill)
               </span>
             </h2>
             <form onSubmit={handleSubmitExpense} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Amount
                   </label>
                   <input
@@ -595,15 +595,15 @@ const EmployeeDashboard = () => {
                     value={newExpense.amount}
                     onChange={(e) => handleAmountChange(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="0.00"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Currency
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                    <span className="text-xs text-muted ml-2">
                       (Will be converted to {user.company.currency}{" "}
                       automatically)
                     </span>
@@ -612,7 +612,7 @@ const EmployeeDashboard = () => {
                     value={newExpense.currency}
                     onChange={(e) => handleCurrencyChange(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     {commonCurrencies.map((curr) => (
                       <option key={curr.code} value={curr.code}>
@@ -682,7 +682,7 @@ const EmployeeDashboard = () => {
                   )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Category
                   </label>
                   <select
@@ -690,7 +690,7 @@ const EmployeeDashboard = () => {
                     onChange={(e) =>
                       setNewExpense({ ...newExpense, category: e.target.value })
                     }
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -701,7 +701,7 @@ const EmployeeDashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Date
                   </label>
                   <input
@@ -711,12 +711,12 @@ const EmployeeDashboard = () => {
                       setNewExpense({ ...newExpense, date: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Description
                   </label>
                   <textarea
@@ -729,7 +729,7 @@ const EmployeeDashboard = () => {
                     }
                     required
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="Describe the expense..."
                   />
                 </div>
@@ -764,9 +764,9 @@ const EmployeeDashboard = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Receipt (Optional)
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                    <span className="text-xs text-muted ml-2">
                       (Max 5MB - Images or PDF)
                     </span>
                   </label>
@@ -774,22 +774,22 @@ const EmployeeDashboard = () => {
                     type="file"
                     accept="image/*,.pdf"
                     onChange={handleFileChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
+                    className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
                   />
                   {receiptPreview && (
                     <div className="mt-3">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-sm text-muted mb-2">
                         Preview:
                       </p>
                       <img
                         src={receiptPreview}
                         alt="Receipt preview"
-                        className="max-w-xs h-auto rounded-lg border border-gray-300 dark:border-gray-600"
+                        className="max-w-xs h-auto rounded-lg border border-border"
                       />
                     </div>
                   )}
                   {receiptFile && !receiptPreview && (
-                    <div className="mt-2 flex items-center text-sm text-gray-600 dark:text-gray-400">
+                    <div className="mt-2 flex items-center text-sm text-muted">
                       <svg
                         className="w-5 h-5 mr-2 text-green-500"
                         fill="currentColor"
@@ -880,7 +880,7 @@ const EmployeeDashboard = () => {
                     setOcrData(null);
                     setOcrError("");
                   }}
-                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                  className="px-6 py-2 border border-border dark:text-gray-300 rounded-lg hover:bg-secondary transition"
                 >
                   Cancel
                 </button>
@@ -897,16 +897,16 @@ const EmployeeDashboard = () => {
         )}
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-4 mb-4">
+        <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-4 mb-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Status
               </label>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -916,13 +916,13 @@ const EmployeeDashboard = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Category
               </label>
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Categories</option>
                 {categories.map((cat) => (
@@ -934,7 +934,7 @@ const EmployeeDashboard = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Start Date
               </label>
               <input
@@ -943,12 +943,12 @@ const EmployeeDashboard = () => {
                 onChange={(e) =>
                   setDateFilter({ ...dateFilter, startDate: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 End Date
               </label>
               <input
@@ -957,7 +957,7 @@ const EmployeeDashboard = () => {
                 onChange={(e) =>
                   setDateFilter({ ...dateFilter, endDate: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -982,12 +982,12 @@ const EmployeeDashboard = () => {
         </div>
 
         {/* Expenses List */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
-          <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-3">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+        <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm mb-6">
+          <div className="border-b border-border px-6 py-3">
+            <h3 className="text-lg font-bold text-primary">
               My Expenses
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted">
               Showing {filteredExpenses.length} of {expenses.length} expenses
             </p>
           </div>
@@ -995,7 +995,7 @@ const EmployeeDashboard = () => {
           {/* Expenses Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+              <thead className="bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Date
@@ -1020,12 +1020,12 @@ const EmployeeDashboard = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-card divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredExpenses.length === 0 ? (
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                      className="px-6 py-8 text-center text-muted"
                     >
                       No expenses found
                     </td>
@@ -1034,7 +1034,7 @@ const EmployeeDashboard = () => {
                   filteredExpenses.map((expense) => (
                     <tr
                       key={expense._id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className="hover:bg-secondary"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                         {new Date(expense.date).toLocaleDateString()}
@@ -1050,12 +1050,12 @@ const EmployeeDashboard = () => {
                           </p>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
                         <div>
                           {formatCurrency(expense.amount, expense.currency)}
                           {expense.convertedAmount &&
                             expense.currency !== expense.convertedCurrency && (
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <div className="text-xs text-muted mt-1">
                                 ≈{" "}
                                 {formatCurrency(
                                   expense.convertedAmount,
@@ -1104,7 +1104,7 @@ const EmployeeDashboard = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                         {expense.reviewedBy?.name || "-"}
                       </td>
                     </tr>

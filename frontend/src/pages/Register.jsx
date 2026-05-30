@@ -117,7 +117,7 @@ export default function Register() {
         <ThemeToggle />
       </div>
 
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl dark:shadow-gray-900/50 animate-scaleIn hover-lift transition-smooth">
+      <div className="max-w-md w-full bg-card p-8 rounded-2xl shadow-2xl dark:shadow-black/60 backdrop-blur-md animate-scaleIn hover-lift transition-smooth">
         <div className="mb-6 animate-fadeIn">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-green-100 dark:bg-green-900/50 rounded-full flex-shrink-0">
@@ -136,10 +136,10 @@ export default function Register() {
               </svg>
             </div>
             <div className="text-left">
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">
+              <h1 className="text-3xl font-bold text-primary mb-1">
                 Register Company
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted">
                 Create your company account
               </p>
             </div>
@@ -187,27 +187,27 @@ export default function Register() {
 
         <form onSubmit={submit} className="space-y-4">
           <div className="animate-slideInLeft animate-stagger-1">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Company Name
             </label>
             <input
               name="companyName"
               value={form.companyName}
               onChange={onChange}
-              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-border dark:bg-secondary dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
               placeholder="Enter company name"
             />
           </div>
           <div className="animate-slideInLeft animate-stagger-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Country
             </label>
             <select
               name="country"
               value={form.country}
               onChange={onChange}
-              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="mt-1 block w-full border border-border dark:bg-secondary dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               required
               disabled={loading}
             >
@@ -223,7 +223,7 @@ export default function Register() {
             </select>
           </div>
           <div className="animate-slideInLeft animate-stagger-3">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Currency
               <span className="ml-2 text-xs text-gray-500">
                 (Auto-populated)
@@ -240,7 +240,7 @@ export default function Register() {
                       }`
                     : ""
                 }
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 bg-gray-50 dark:bg-gray-600 disabled:cursor-not-allowed dark:text-gray-300"
+                className="mt-1 block w-full border border-border dark:bg-secondary dark:text-white rounded-lg px-4 py-3 bg-secondary disabled:cursor-not-allowed dark:text-gray-300"
                 disabled
                 placeholder="Automatically set based on country"
               />
@@ -262,20 +262,20 @@ export default function Register() {
             </div>
           </div>
           <div className="animate-slideInRight animate-stagger-1">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Admin Name
             </label>
             <input
               name="adminName"
               value={form.adminName}
               onChange={onChange}
-              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-border dark:bg-secondary dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="Enter admin name"
               required
             />
           </div>
           <div className="animate-slideInRight animate-stagger-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Admin Email
             </label>
             <input
@@ -283,13 +283,13 @@ export default function Register() {
               value={form.adminEmail}
               onChange={onChange}
               type="email"
-              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-border dark:bg-secondary dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="admin@company.com"
               required
             />
           </div>
           <div className="animate-slideInRight animate-stagger-3">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Password
             </label>
             <input
@@ -297,7 +297,7 @@ export default function Register() {
               value={form.adminPassword}
               onChange={onChange}
               type="password"
-              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="mt-1 block w-full border border-border dark:bg-secondary dark:text-white rounded-lg px-4 py-3 transition-smooth hover:border-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="••••••••"
               required
             />

@@ -136,7 +136,7 @@ const ExpenseTrendsChart = ({ expenses, currency = "USD" }) => {
 
   if (displayMonths.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-center h-64 text-muted">
         <div className="text-center">
           <svg
             className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600"

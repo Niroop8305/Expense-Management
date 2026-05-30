@@ -103,7 +103,7 @@ const ForgotPassword = () => {
         <ThemeToggle />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
+      <div className="bg-card rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/50 backdrop-blur-md p-8 w-full max-w-md animate-scaleIn hover-lift transition-smooth">
         {/* Header */}
         <div className="text-center mb-8 animate-fadeIn">
           <div className="inline-block p-3 bg-purple-100 dark:bg-purple-900/50 rounded-full mb-4">
@@ -220,7 +220,7 @@ const ForgotPassword = () => {
         {step === 1 && (
           <form onSubmit={handleRequestCode} className="space-y-6">
             <div className="animate-slideInLeft">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -244,7 +244,7 @@ const ForgotPassword = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                  className="w-full pl-10 pr-4 py-3 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
                   placeholder="you@example.com"
                 />
               </div>
@@ -286,7 +286,7 @@ const ForgotPassword = () => {
         {step === 2 && (
           <form onSubmit={handleVerifyCode} className="space-y-6">
             <div className="animate-slideInLeft">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Verification Code
               </label>
               <div className="relative">
@@ -311,7 +311,7 @@ const ForgotPassword = () => {
                   onChange={(e) => setCode(e.target.value)}
                   required
                   maxLength={6}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400 text-center text-2xl font-bold tracking-widest"
+                  className="w-full pl-10 pr-4 py-3 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400 text-center text-2xl font-bold tracking-widest"
                   placeholder="000000"
                 />
               </div>
@@ -364,7 +364,7 @@ const ForgotPassword = () => {
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="space-y-6">
             <div className="animate-slideInLeft animate-stagger-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -388,14 +388,14 @@ const ForgotPassword = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                  className="w-full pl-10 pr-4 py-3 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
             <div className="animate-slideInLeft animate-stagger-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -419,7 +419,7 @@ const ForgotPassword = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
+                  className="w-full pl-10 pr-4 py-3 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-smooth hover:border-gray-400"
                   placeholder="••••••••"
                 />
               </div>

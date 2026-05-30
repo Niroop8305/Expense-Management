@@ -81,15 +81,15 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
+      <header className="bg-card shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-primary">
               Settings
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted">
               Account Settings
             </p>
           </div>
@@ -107,40 +107,40 @@ const Settings = () => {
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* User Info Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 mb-6">
+          <h2 className="text-xl font-bold text-primary mb-4">
             Profile Information
           </h2>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <label className="text-sm font-medium text-muted">
                 Name
               </label>
-              <p className="text-lg text-gray-900 dark:text-white">
+              <p className="text-lg text-primary">
                 {user.name}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <label className="text-sm font-medium text-muted">
                 Email
               </label>
-              <p className="text-lg text-gray-900 dark:text-white">
+              <p className="text-lg text-primary">
                 {user.email}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <label className="text-sm font-medium text-muted">
                 Role
               </label>
-              <p className="text-lg text-gray-900 dark:text-white capitalize">
+              <p className="text-lg text-primary capitalize">
                 {user.role}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <label className="text-sm font-medium text-muted">
                 Company
               </label>
-              <p className="text-lg text-gray-900 dark:text-white">
+              <p className="text-lg text-primary">
                 {user.company.name}
               </p>
             </div>
@@ -148,8 +148,8 @@ const Settings = () => {
         </div>
 
         {/* Change Password Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6">
+          <h2 className="text-xl font-bold text-primary mb-4">
             Change Password
           </h2>
 
@@ -167,7 +167,7 @@ const Settings = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Current Password
               </label>
               <input
@@ -176,13 +176,13 @@ const Settings = () => {
                 value={formData.currentPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter current password"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 New Password
               </label>
               <input
@@ -191,13 +191,13 @@ const Settings = () => {
                 value={formData.newPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter new password (min 6 characters)"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-primary mb-2">
                 Confirm New Password
               </label>
               <input
@@ -206,7 +206,7 @@ const Settings = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Confirm new password"
               />
             </div>
@@ -215,7 +215,7 @@ const Settings = () => {
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-6 py-2 border border-gray-300 dark:border-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                className="px-6 py-2 border border-border dark:text-gray-300 rounded-lg hover:bg-secondary transition"
               >
                 Cancel
               </button>

@@ -4,14 +4,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Custom colors for better dark mode support
-        dark: {
-          bg: "#0f172a", // Main dark background
-          card: "#1e293b", // Card background
-          border: "#334155", // Border color
-          text: "#e2e8f0", // Primary text
-          muted: "#94a3b8", // Muted text
-        },
+        background: 'var(--bg-primary)',
+        secondary: 'var(--bg-secondary)',
+        card: 'var(--bg-card)',
+        primary: 'var(--text-primary)',
+        muted: 'var(--text-muted)',
+        border: 'var(--border-color)',
+        'border-highlight': 'var(--border-highlight)',
+        accent: 'var(--accent-primary)',
+        'accent-hover': 'var(--accent-hover)',
+        danger: 'var(--danger)',
+        success: 'var(--success)',
+        warning: 'var(--warning)',
       },
     },
   },

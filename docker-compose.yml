@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: expense_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: expense_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - PORT=5000
+      # In production, use the container hostname 'mongodb' instead of localhost
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/expense_management?authSource=admin
+      - JWT_SECRET=production_jwt_secret_change_me
+      - EMAIL_USER=your_email@gmail.com
+      - EMAIL_PASS=your_app_password
+      - FRONTEND_URL=http://localhost:80
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: expense_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    # Note: Frontend API URL is hardcoded in Axios instances to localhost:5000 right now.
+    # To fully dockerize the frontend, ensure the Vite build environment variable VITE_API_URL 
+    # points to your production backend URL.
+
+volumes:
+  mongodb_data:

@@ -227,25 +227,25 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
+      <header className="bg-card shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-primary">
               Admin Dashboard
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted">
               {user.company.name} • {user.company.currency}
             </p>
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-primary">
                 {user.name}
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-muted">
                 {user.email}
               </p>
             </div>
@@ -334,8 +334,8 @@ const AdminDashboard = () => {
         {expenses.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Expense by Category Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 animate-fadeIn">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-6 h-6 mr-2 text-blue-600"
                   fill="none"
@@ -364,8 +364,8 @@ const AdminDashboard = () => {
             </div>
 
             {/* Expense Status Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn animate-stagger-1">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 animate-fadeIn animate-stagger-1">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-6 h-6 mr-2 text-green-600"
                   fill="none"
@@ -388,8 +388,8 @@ const AdminDashboard = () => {
             </div>
 
             {/* Expense Trends Chart - Full Width */}
-            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 animate-fadeIn animate-stagger-2">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="lg:col-span-2 bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 animate-fadeIn animate-stagger-2">
+              <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
                 <svg
                   className="w-6 h-6 mr-2 text-purple-600"
                   fill="none"
@@ -414,7 +414,7 @@ const AdminDashboard = () => {
         )}
 
         {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-t-lg shadow dark:shadow-gray-900/50 mb-0">
+        <div className="bg-card rounded-t-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm mb-0">
           <nav className="flex border-b border-gray-200">
             <button
               onClick={() => setActiveTab("users")}
@@ -462,14 +462,14 @@ const AdminDashboard = () => {
 
             {/* Create User Form */}
             {showCreateForm && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm p-6 mb-6">
+                <h2 className="text-xl font-bold text-primary mb-4">
                   Create New User
                 </h2>
                 <form onSubmit={handleCreateUser} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-primary mb-2">
                         Full Name
                       </label>
                       <input
@@ -479,13 +479,13 @@ const AdminDashboard = () => {
                           setNewUser({ ...newUser, name: e.target.value })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                        className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="John Doe"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-primary mb-2">
                         Email
                       </label>
                       <input
@@ -495,13 +495,13 @@ const AdminDashboard = () => {
                           setNewUser({ ...newUser, email: e.target.value })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                        className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="john@example.com"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-primary mb-2">
                         Password
                       </label>
                       <input
@@ -511,13 +511,13 @@ const AdminDashboard = () => {
                           setNewUser({ ...newUser, password: e.target.value })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                        className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="••••••••"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-primary mb-2">
                         Role
                       </label>
                       <select
@@ -525,7 +525,7 @@ const AdminDashboard = () => {
                         onChange={(e) =>
                           setNewUser({ ...newUser, role: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <optgroup label="System Roles">
                           <option value="employee">Employee</option>
@@ -545,7 +545,7 @@ const AdminDashboard = () => {
 
                     {newUser.role === "employee" && (
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-primary mb-2">
                           Assign Manager (Optional)
                         </label>
                         <select
@@ -556,7 +556,7 @@ const AdminDashboard = () => {
                               managerId: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">No Manager</option>
                           {managers.map((manager) => (
@@ -573,7 +573,7 @@ const AdminDashboard = () => {
                     <button
                       type="button"
                       onClick={() => setShowCreateForm(false)}
-                      className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 transition"
+                      className="px-6 py-2 border border-border rounded-lg hover:bg-secondary dark:text-gray-300 transition"
                     >
                       Cancel
                     </button>
@@ -590,9 +590,9 @@ const AdminDashboard = () => {
             )}
 
             {/* Users List */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden">
+            <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-bold text-primary">
                   All Users
                 </h2>
                 <p className="text-sm text-gray-600 mt-1 dark:text-gray-400">
@@ -602,7 +602,7 @@ const AdminDashboard = () => {
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+                  <thead className="bg-secondary">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Name
@@ -621,19 +621,19 @@ const AdminDashboard = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-card divide-y divide-gray-200 dark:divide-gray-700">
                     {users.map((u) => (
                       <tr
                         key={u._id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="hover:bg-secondary"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-primary">
                             {u.name}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <div className="text-sm text-muted">
                             {u.email}
                           </div>
                         </td>
@@ -682,13 +682,13 @@ const AdminDashboard = () => {
             {/* Edit User Modal */}
             {showEditModal && editingUser && (
               <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
-                <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <div className="bg-card rounded-lg max-w-md w-full p-6">
+                  <h3 className="text-xl font-bold text-primary mb-4">
                     Edit User
                   </h3>
                   <form onSubmit={handleUpdateUser} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-primary mb-2">
                         Name
                       </label>
                       <input
@@ -701,12 +701,12 @@ const AdminDashboard = () => {
                           })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-primary mb-2">
                         Email
                       </label>
                       <input
@@ -719,12 +719,12 @@ const AdminDashboard = () => {
                           })
                         }
                         required
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-primary mb-2">
                         Role
                       </label>
                       <select
@@ -735,7 +735,7 @@ const AdminDashboard = () => {
                             role: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <optgroup label="System Roles">
                           <option value="employee">Employee</option>
@@ -754,7 +754,7 @@ const AdminDashboard = () => {
                     </div>
                     {editingUser.role === "employee" && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-primary mb-2">
                           Assign Manager (Optional)
                         </label>
                         <select
@@ -765,7 +765,7 @@ const AdminDashboard = () => {
                               managerId: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 border border-border dark:bg-secondary dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">No Manager</option>
                           {managers.map((manager) => (
@@ -782,7 +782,7 @@ const AdminDashboard = () => {
                           setShowEditModal(false);
                           setEditingUser(null);
                         }}
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 transition"
+                        className="px-4 py-2 border border-border rounded-lg hover:bg-secondary dark:text-gray-300 transition"
                       >
                         Cancel
                       </button>
@@ -803,9 +803,9 @@ const AdminDashboard = () => {
 
         {/* Expenses Tab */}
         {activeTab === "expenses" && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden">
+          <div className="bg-card rounded-lg shadow-md dark:shadow-lg dark:shadow-black/40 backdrop-blur-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold text-primary">
                 All Company Expenses
               </h2>
               <p className="text-sm text-gray-600 mt-1 dark:text-gray-400">
@@ -815,7 +815,7 @@ const AdminDashboard = () => {
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700">
+                <thead className="bg-secondary">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       Employee
@@ -840,7 +840,7 @@ const AdminDashboard = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-card divide-y divide-gray-200 dark:divide-gray-700">
                   {expenses.length === 0 ? (
                     <tr>
                       <td
@@ -854,20 +854,20 @@ const AdminDashboard = () => {
                     expenses.map((expense) => (
                       <tr
                         key={expense._id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="hover:bg-secondary"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-primary">
                             {expense.submittedBy.name}
                           </div>
                           <div className="text-xs text-gray-500">
                             {expense.submittedBy.role}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                           {new Date(expense.date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                           {expense.category}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300 max-w-xs">
